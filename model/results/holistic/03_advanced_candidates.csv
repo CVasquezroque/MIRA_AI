@@ -1,0 +1,3 @@
+model,stage,model_family,feature_set,balance_policy,train_strategy,anomaly_policy,selected_threshold,validation_pr_auc,validation_roc_auc,test_pr_auc,test_roc_auc
+advanced_gate | Random Forest,advanced_gate,Random Forest,ratios_interactions_target_frequency,model_default_weighting,full_0_5_sample,without_anomaly_scores,0.4002604119337899,0.06093172203429773,0.7550450837269214,0.1056354843545991,0.7789555694549605
+advanced_gate | Logistic Regression,advanced_gate,Logistic Regression,ratios_interactions_target_frequency,model_default_weighting,full_0_5_sample,without_anomaly_scores,0.7570113565290331,0.05956948673938005,0.7436548828777253,0.10255815531007396,0.8277973466767621

@@ -1,0 +1,35 @@
+{
+  "config": {
+    "mode": "smoke",
+    "tuning_train_rows": 2500,
+    "tuning_valid_rows": 1000,
+    "train_rows": 6000,
+    "eval_rows": 2500,
+    "baseline_n_iter": 1,
+    "catboost_n_iter": 1,
+    "top_n_baseline_to_balance": 2,
+    "top_n_to_advanced": 2,
+    "top_n_to_anomaly": 1,
+    "fairness_top_n": 1,
+    "shap_top_n": 1,
+    "shap_sample_rows": 100,
+    "anomaly_legit_rows": 1000,
+    "lof_legit_rows": 800,
+    "autoencoder_legit_rows": 800,
+    "include_expensive_ensembles": false
+  },
+  "train_months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "valid_month": 6,
+  "test_month": 7,
+  "unusable_columns": [
+    "device_fraud_count"
+  ],
+  "threshold_policy": "validation global FPR <= 5.00%"
+}

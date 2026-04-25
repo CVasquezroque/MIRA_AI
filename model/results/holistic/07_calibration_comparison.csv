@@ -1,0 +1,5 @@
+model,split,score_type,brier_score,mean_score,observed_fraud_rate,pr_auc,roc_auc
+balance_gate | Logistic Regression | random_oversampling,validation,raw,0.018791195834149337,0.05708748011897317,0.0136,0.0918770786563758,0.7820476122322407
+balance_gate | Logistic Regression | random_oversampling,validation,platt_calibrated_on_validation,0.01294653828178706,0.013580785740420135,0.0136,0.0918770786563758,0.7820476122322407
+balance_gate | Logistic Regression | random_oversampling,test,raw,0.015821672371604728,0.03900932585048372,0.0148,0.12856754678597634,0.8333936860124437
+balance_gate | Logistic Regression | random_oversampling,test,platt_calibrated_on_validation,0.013915444032144885,0.009592029840632042,0.0148,0.12856754678597634,0.8333936860124437

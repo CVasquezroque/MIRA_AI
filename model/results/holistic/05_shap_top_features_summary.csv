@@ -1,0 +1,16 @@
+model,feature,mean_abs_shap
+balance_gate | Logistic Regression | random_oversampling,num__phone_home_valid,0.4113421334116007
+balance_gate | Logistic Regression | random_oversampling,num__email_is_free,0.4096268084556951
+balance_gate | Logistic Regression | random_oversampling,num__name_email_similarity,0.2960548415324098
+balance_gate | Logistic Regression | random_oversampling,cat__device_os_windows,0.2893332586708238
+balance_gate | Logistic Regression | random_oversampling,num__prev_address_months_count_was_missing,0.2677944207543326
+balance_gate | Logistic Regression | random_oversampling,num__velocity_24h,0.265078984724311
+balance_gate | Logistic Regression | random_oversampling,num__prev_address_months_count,0.258242848491291
+balance_gate | Logistic Regression | random_oversampling,num__keep_alive_session,0.23415636389695116
+balance_gate | Logistic Regression | random_oversampling,num__bank_months_count_was_missing,0.20349279416528238
+balance_gate | Logistic Regression | random_oversampling,num__velocity_6h,0.1956038451354508
+balance_gate | Logistic Regression | random_oversampling,cat__housing_status_BB,0.19362423248710992
+balance_gate | Logistic Regression | random_oversampling,cat__device_os_other,0.17790308123069742
+balance_gate | Logistic Regression | random_oversampling,num__customer_age,0.16586722253945993
+balance_gate | Logistic Regression | random_oversampling,num__velocity_4w,0.15705426374312656
+balance_gate | Logistic Regression | random_oversampling,num__days_since_request,0.13135682256638812
