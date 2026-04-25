@@ -1,0 +1,8 @@
+split,model,threshold,tn,fp,fn,tp
+Validation,Logistic Regression,0.5,87344,19374,315,1135
+Validation,Decision Tree,0.5,80877,25841,363,1087
+Validation,Random Forest,0.5,94974,11744,485,965
+Validation,Extra Trees,0.5,87881,18837,359,1091
+Validation,XGBoost,0.5,90658,16060,330,1120
+Validation,LightGBM,0.5,79992,26726,219,1231
+Validation,Voting Classifier,0.5,87915,18803,285,1165

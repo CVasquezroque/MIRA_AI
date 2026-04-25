@@ -1,0 +1,31 @@
+split,model,balancing,threshold,tn,fp,fn,tp
+Test,Logistic Regression,no_balance,0.5,95415,0,1425,3
+Test,Logistic Regression,class_weight,0.5,85585,9830,455,973
+Test,Logistic Regression,random_undersampling,0.5,93697,1718,965,463
+Test,Logistic Regression,random_oversampling,0.5,94901,514,1189,239
+Test,Logistic Regression,smote,0.5,94875,540,1183,245
+Test,Logistic Regression,smote_plus_weight,0.5,86620,8795,486,942
+Test,Random Forest,no_balance,0.5,95415,0,1428,0
+Test,Random Forest,class_weight,0.5,90361,5054,689,739
+Test,Random Forest,random_undersampling,0.5,94550,865,1165,263
+Test,Random Forest,random_oversampling,0.5,95288,127,1336,92
+Test,Random Forest,smote,0.5,95410,5,1422,6
+Test,Random Forest,smote_plus_weight,0.5,93056,2359,943,485
+Test,Extra Trees,no_balance,0.5,95415,0,1428,0
+Test,Extra Trees,class_weight,0.5,82215,13200,423,1005
+Test,Extra Trees,random_undersampling,0.5,94257,1158,1125,303
+Test,Extra Trees,random_oversampling,0.5,95220,195,1307,121
+Test,Extra Trees,smote,0.5,95393,22,1404,24
+Test,Extra Trees,smote_plus_weight,0.5,88340,7075,609,819
+Test,XGBoost,no_balance,0.5,95390,25,1389,39
+Test,XGBoost,class_weight,0.5,82796,12619,392,1036
+Test,XGBoost,random_undersampling,0.5,90480,4935,642,786
+Test,XGBoost,random_oversampling,0.5,94461,954,1067,361
+Test,XGBoost,smote,0.5,95407,8,1407,21
+Test,XGBoost,smote_plus_weight,0.5,95108,307,1259,169
+Test,LightGBM,no_balance,0.5,95411,4,1414,14
+Test,LightGBM,class_weight,0.5,79542,15873,346,1082
+Test,LightGBM,random_undersampling,0.5,92558,2857,812,616
+Test,LightGBM,random_oversampling,0.5,94573,842,1113,315
+Test,LightGBM,smote,0.5,95412,3,1418,10
+Test,LightGBM,smote_plus_weight,0.5,95109,306,1264,164

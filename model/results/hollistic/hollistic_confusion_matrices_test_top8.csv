@@ -1,0 +1,9 @@
+model,threshold,tn,fp,fn,tp
+CatBoost | recent_3_5 | with_anomaly_scores,0.7607083259977683,91866,3549,740,688
+CatBoost | full_0_5 | with_anomaly_scores,0.7445883060119833,91546,3869,702,726
+XGBoost | recent_3_5 | with_anomaly_scores,0.7869336009025574,90774,4641,665,763
+CatBoost | recent_3_5 | without_anomaly_scores,0.7541364557845374,91699,3716,731,697
+CatBoost | full_0_5_recency_weighted | with_anomaly_scores,0.748876286332726,91602,3813,711,717
+CatBoost | full_0_5 | without_anomaly_scores,0.7414061446201454,91873,3542,725,703
+CatBoost | full_0_5_recency_weighted | without_anomaly_scores,0.7453721799115631,91821,3594,744,684
+XGBoost | recent_3_5 | without_anomaly_scores,0.7947267889976501,91635,3780,725,703

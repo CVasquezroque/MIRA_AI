@@ -1,0 +1,26 @@
+# Raw/local data
+data_banca/Base.csv
+
+# Python/runtime artifacts
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Generated heavy or noisy artifacts
+*.log
+eda/figures/*.png
+model/results/**/figures/*.png
+model/results/**/*.png
+model/results/**/anomaly_score_training_snapshot.csv
+model/results/**/*.joblib
+model/results/**/*.pkl
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

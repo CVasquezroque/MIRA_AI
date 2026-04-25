@@ -1,0 +1,91 @@
+{
+  "Logistic Regression": {
+    "best_score_pr_auc": 0.13833802543200074,
+    "best_params": {
+      "features__add_log_features": false,
+      "features__add_missing_flags": true,
+      "features__add_outlier_flags": true,
+      "model__C": 0.02938027938703535
+    }
+  },
+  "Decision Tree": {
+    "best_score_pr_auc": 0.06916098594639791,
+    "best_params": {
+      "features__add_log_features": true,
+      "features__add_missing_flags": false,
+      "features__add_outlier_flags": false,
+      "model__ccp_alpha": 1e-05,
+      "model__max_depth": 12,
+      "model__min_samples_leaf": 285,
+      "model__min_samples_split": 956
+    }
+  },
+  "Random Forest": {
+    "best_score_pr_auc": 0.13164025761389564,
+    "best_params": {
+      "features__add_log_features": true,
+      "features__add_missing_flags": false,
+      "features__add_outlier_flags": true,
+      "model__max_depth": 12,
+      "model__max_features": "sqrt",
+      "model__min_samples_leaf": 70,
+      "model__n_estimators": 88
+    }
+  },
+  "Extra Trees": {
+    "best_score_pr_auc": 0.11363947335021822,
+    "best_params": {
+      "features__add_log_features": true,
+      "features__add_missing_flags": false,
+      "features__add_outlier_flags": true,
+      "model__max_depth": 12,
+      "model__max_features": "sqrt",
+      "model__min_samples_leaf": 70,
+      "model__n_estimators": 88
+    }
+  },
+  "XGBoost": {
+    "best_score_pr_auc": 0.1660031235881788,
+    "best_params": {
+      "features__add_log_features": true,
+      "features__add_missing_flags": false,
+      "features__add_outlier_flags": true,
+      "model__colsample_bytree": 0.7550304369598491,
+      "model__gamma": 2.339073000818308,
+      "model__learning_rate": 0.05977505142360254,
+      "model__max_depth": 4,
+      "model__min_child_weight": 3,
+      "model__n_estimators": 146,
+      "model__reg_lambda": 0.5950295391592122,
+      "model__scale_pos_weight": 72.39952153110048,
+      "model__subsample": 0.8803345035229626
+    }
+  },
+  "LightGBM": {
+    "best_score_pr_auc": 0.1420568477658535,
+    "best_params": {
+      "features__add_log_features": false,
+      "features__add_missing_flags": false,
+      "features__add_outlier_flags": false,
+      "model__colsample_bytree": 0.8099085529881075,
+      "model__learning_rate": 0.03920673972242137,
+      "model__max_depth": 8,
+      "model__min_child_samples": 269,
+      "model__n_estimators": 100,
+      "model__num_leaves": 17,
+      "model__reg_lambda": 5.2466345336252855,
+      "model__scale_pos_weight": 120.6658692185008,
+      "model__subsample": 0.7511572371061874
+    }
+  },
+  "Voting Classifier": {
+    "best_score_pr_auc": 0.1635082580536903,
+    "best_params": {
+      "weights": [
+        1,
+        1,
+        2
+      ]
+    }
+  }
+}

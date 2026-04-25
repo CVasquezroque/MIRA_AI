@@ -1,0 +1,17 @@
+{
+  "train_months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "valid_month": 6,
+  "test_month": 7,
+  "train_sample_max_rows": 180000,
+  "anomaly_legit_sample_rows": 25000,
+  "lof_legit_sample_rows": 15000,
+  "autoencoder_legit_sample_rows": 18000,
+  "threshold_policy": "validation global FPR <= 5.00%"
+}

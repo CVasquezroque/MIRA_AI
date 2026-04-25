@@ -1,0 +1,2 @@
+precision,recall_tpr,fpr,pr_auc,roc_auc,tn,fp,fn,tp,model,variant
+0.07677543186180422,0.7282913165266106,0.13106953833254728,0.1934157990727651,0.888075649481089,82909,12506,388,1040,Logistic Regression,missing_outlier_log1p

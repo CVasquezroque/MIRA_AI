@@ -1,0 +1,8 @@
+split,model,threshold,tn,fp,fn,tp
+Test,Logistic Regression,0.5,82602,12813,375,1053
+Test,Decision Tree,0.5,74517,20898,384,1044
+Test,Random Forest,0.5,87002,8413,491,937
+Test,Extra Trees,0.5,78944,16471,338,1090
+Test,XGBoost,0.5,82742,12673,360,1068
+Test,LightGBM,0.5,74973,20442,250,1178
+Test,Voting Classifier,0.5,81406,14009,331,1097

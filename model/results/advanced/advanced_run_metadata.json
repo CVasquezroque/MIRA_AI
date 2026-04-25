@@ -1,0 +1,17 @@
+{
+  "train_months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "valid_month": 6,
+  "test_month": 7,
+  "train_sample_rows": 250000,
+  "scale_pos_weight": 96.54194303550527,
+  "unusable_columns": [
+    "device_fraud_count"
+  ]
+}
