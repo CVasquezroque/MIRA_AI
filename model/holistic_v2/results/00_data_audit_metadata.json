@@ -1,0 +1,31 @@
+{
+  "dataset_path": "C:\\Users\\LEGION CARLOS\\Desktop\\Home\\BREIT\\MIRA_AI\\data_banca\\Base.csv",
+  "rows": 1000000,
+  "columns": 32,
+  "train_months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "valid_month": 6,
+  "test_month": 7,
+  "duplicate_rows": 0,
+  "drift_detected": true,
+  "max_monthly_prevalence_range": 0.005999649783501919,
+  "leakage_exclusions": [
+    "device_fraud_count"
+  ],
+  "constant_or_near_constant_columns": [
+    "device_fraud_count"
+  ],
+  "protected_candidates": [
+    "housing_status",
+    "employment_status",
+    "customer_age",
+    "income"
+  ],
+  "split_valid_enough_to_continue": true
+}
