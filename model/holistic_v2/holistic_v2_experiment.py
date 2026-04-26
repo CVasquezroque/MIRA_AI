@@ -1337,11 +1337,422 @@ def run_d1() -> None:
     print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D1_improved_baseline_top5.md'}")
 
 
+def load_d1_score_inputs() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str]]:
+    candidates_path = RESULTS_DIR / "01_improved_baseline_candidates.csv"
+    valid_scores_path = RESULTS_DIR / "01_improved_baseline_validation_scores.csv"
+    test_scores_path = RESULTS_DIR / "01_improved_baseline_test_scores.csv"
+    if not candidates_path.exists() or not valid_scores_path.exists() or not test_scores_path.exists():
+        raise FileNotFoundError("Run D1 before D2; baseline candidates and score files are required.")
+    candidates = pd.read_csv(candidates_path)
+    valid_scores = pd.read_csv(valid_scores_path)
+    test_scores = pd.read_csv(test_scores_path)
+    base_ids = candidates.loc[
+        (candidates["ensemble_type"] == "none")
+        & (candidates["model_family"].isin(["CatBoost", "XGBoost", "LightGBM", "LogisticRegression"])),
+        "model_id",
+    ].tolist()
+    return candidates, valid_scores, test_scores, base_ids
+
+
+def simplex_grid(n_models: int, step: float = 0.25) -> list[np.ndarray]:
+    units = int(round(1 / step))
+    weights: list[np.ndarray] = []
+
+    def recurse(prefix: list[int], remaining: int, slots: int) -> None:
+        if slots == 1:
+            weights.append(np.array(prefix + [remaining], dtype=float) / units)
+            return
+        for value in range(remaining + 1):
+            recurse(prefix + [value], remaining - value, slots - 1)
+
+    recurse([], units, n_models)
+    return [weight for weight in weights if np.count_nonzero(weight) > 0]
+
+
+def sparse_simplex_grid(n_models: int, max_nonzero: int = 3, step: float = 0.10) -> list[np.ndarray]:
+    from itertools import combinations
+
+    sparse_weights: list[np.ndarray] = []
+    for size in range(1, max_nonzero + 1):
+        for indices in combinations(range(n_models), size):
+            for small_weight in simplex_grid(size, step=step):
+                weight = np.zeros(n_models, dtype=float)
+                weight[list(indices)] = small_weight
+                sparse_weights.append(weight)
+    return sparse_weights
+
+
+def validation_blend_metrics(y_valid: pd.Series, scores: np.ndarray) -> dict:
+    threshold = threshold_at_fpr_limit(y_valid.to_numpy(), scores, max_fpr=0.05)
+    return evaluate_split(y_valid, scores, threshold, float(y_valid.mean()), "validation")
+
+
+def choose_weight_by_objective(
+    y_valid: pd.Series,
+    valid_matrix: np.ndarray,
+    weights: list[np.ndarray],
+    objective: str,
+) -> tuple[np.ndarray, dict]:
+    best_weight: np.ndarray | None = None
+    best_metrics: dict | None = None
+    best_key: tuple = (-np.inf,)
+    for weight in weights:
+        scores = valid_matrix @ weight
+        metrics = validation_blend_metrics(y_valid, scores)
+        if objective == "pr_auc":
+            key = (
+                metrics["validation_pr_auc"],
+                metrics["validation_precision_top_1pct"],
+                -metrics["validation_fdr_at_fpr5"],
+            )
+        elif objective == "recall_fpr5":
+            key = (
+                metrics["validation_recall_at_fpr5"],
+                -metrics["validation_fdr_at_fpr5"],
+                metrics["validation_pr_auc"],
+            )
+        elif objective == "precision_top1":
+            key = (
+                metrics["validation_precision_top_1pct"],
+                metrics["validation_pr_auc"],
+                -metrics["validation_fdr_at_fpr5"],
+            )
+        elif objective == "fdr_reduction":
+            key = (
+                -metrics["validation_fdr_at_fpr5"],
+                metrics["validation_recall_at_fpr5"],
+                metrics["validation_pr_auc"],
+            )
+        else:
+            raise ValueError(f"Unknown blend objective: {objective}")
+        if key > best_key:
+            best_key = key
+            best_weight = weight
+            best_metrics = metrics
+    if best_weight is None or best_metrics is None:
+        raise RuntimeError(f"No weights evaluated for objective {objective}")
+    return best_weight, best_metrics
+
+
+def add_weighted_blend_candidate(
+    rows: list[dict],
+    weight_rows: list[dict],
+    score_outputs: dict[str, dict[str, np.ndarray]],
+    base_ids: list[str],
+    base_candidates: pd.DataFrame,
+    y_valid: pd.Series,
+    y_test: pd.Series,
+    valid_matrix: np.ndarray,
+    test_matrix: np.ndarray,
+    name_suffix: str,
+    weights: np.ndarray,
+    notes: str,
+    rank_based: bool = False,
+) -> None:
+    spec = make_candidate_spec(
+        "Blend",
+        "scores" if not rank_based else "ranks",
+        "mixed",
+        "mixed",
+        "mixed",
+        "validation_weighted",
+        name_suffix,
+        notes,
+    )
+    if rank_based:
+        valid_rank = np.column_stack([score_percentile_rank(valid_matrix[:, idx]) for idx in range(valid_matrix.shape[1])])
+        test_rank = np.column_stack([score_percentile_rank(test_matrix[:, idx]) for idx in range(test_matrix.shape[1])])
+        valid_scores = valid_rank @ weights
+        test_scores = test_rank @ weights
+    else:
+        valid_scores = valid_matrix @ weights
+        test_scores = test_matrix @ weights
+    add_evaluated_candidate(
+        rows,
+        score_outputs,
+        spec,
+        y_valid,
+        y_test,
+        valid_scores,
+        test_scores,
+        float(y_valid.mean()),
+        float(y_test.mean()),
+    )
+    for model_id, weight in zip(base_ids, weights, strict=True):
+        base_row = base_candidates.loc[base_candidates["model_id"] == model_id].iloc[0]
+        weight_rows.append(
+            {
+                "blend_model_id": spec["model_id"],
+                "blend_name": spec["readable_model_name"],
+                "base_model_id": model_id,
+                "base_readable_model_name": base_row["readable_model_name"],
+                "base_model_family": base_row["model_family"],
+                "weight": float(weight),
+                "non_trivial_weight": bool(weight >= 0.05),
+            }
+        )
+
+
+def plot_d2_figures(results: pd.DataFrame) -> None:
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.scatter(
+        results["validation_recall_at_fpr5"],
+        results["validation_precision_at_fpr5"],
+        s=90,
+        c=results["validation_pr_auc"],
+        cmap="plasma",
+    )
+    for _, row in results.iterrows():
+        label = row["ensemble_type"].replace("_", "\n")[:28]
+        ax.annotate(label, (row["validation_recall_at_fpr5"], row["validation_precision_at_fpr5"]), fontsize=7)
+    ax.set_xlabel("Validation recall at FPR <= 5%")
+    ax.set_ylabel("Validation precision at FPR <= 5%")
+    ax.set_title("D2 Weighted Blend PR / FPR Trade-off")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "03_weighted_blend_pr_curves.png", dpi=150)
+    plt.close(fig)
+
+    topk = results.sort_values("validation_precision_top_1pct", ascending=False)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.bar(
+        topk["ensemble_type"].str.replace("_", "\n"),
+        topk["validation_precision_top_1pct"],
+        color="#2ca02c",
+    )
+    ax.set_ylabel("Validation Precision@Top 1%")
+    ax.set_title("D2 Weighted Blend Top-K Quality")
+    ax.tick_params(axis="x", labelrotation=45)
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "03_weighted_blend_topk.png", dpi=150)
+    plt.close(fig)
+
+
+def write_d2_summary_and_decision(
+    results: pd.DataFrame,
+    weights: pd.DataFrame,
+    baseline_candidates: pd.DataFrame,
+) -> None:
+    best_individual = baseline_candidates[baseline_candidates["ensemble_type"] == "none"].sort_values(
+        "validation_pr_auc", ascending=False
+    ).iloc[0]
+    best_blend = results.sort_values(
+        ["validation_precision_top_1pct", "validation_pr_auc", "validation_recall_at_fpr5"],
+        ascending=False,
+    ).iloc[0]
+    pr_delta = float(best_blend["validation_pr_auc"] - best_individual["validation_pr_auc"])
+    fdr_delta = float(best_blend["validation_fdr_at_fpr5"] - best_individual["validation_fdr_at_fpr5"])
+    recall_delta = float(best_blend["validation_recall_at_fpr5"] - best_individual["validation_recall_at_fpr5"])
+    top1_delta = float(best_blend["validation_precision_top_1pct"] - best_individual["validation_precision_top_1pct"])
+    non_trivial = weights[
+        (weights["blend_model_id"] == best_blend["model_id"]) & (weights["non_trivial_weight"])
+    ].sort_values("weight", ascending=False)
+    max_weight = float(weights[weights["blend_model_id"] == best_blend["model_id"]]["weight"].max())
+
+    if pr_delta >= 0.005:
+        pr_label = "meaningful"
+    elif pr_delta >= 0.001:
+        pr_label = "marginal"
+    else:
+        pr_label = "negligible"
+
+    promote = (
+        (pr_delta >= 0.001 or recall_delta > 0 or top1_delta > 0)
+        and fdr_delta <= 0.002
+        and max_weight < 0.85
+    )
+    decision_label = "promote" if promote else "keep as benchmark"
+    if not promote and max_weight >= 0.85:
+        reason = "Weights concentrate almost entirely on one base model, so the simpler base model is preferred."
+    elif not promote:
+        reason = "Operational gains are marginal or come with false-positive/FDR trade-offs."
+    else:
+        reason = "The selected blend improves at least one validation operational metric without materially worsening FDR."
+
+    summary = f"""# D2 Weighted Blend Summary
+
+## Best Individual Benchmark
+
+`{best_individual["readable_model_name"]}`
+
+## Best Weighted Blend
+
+`{best_blend["readable_model_name"]}`
+
+## Validation Deltas Versus Best Individual
+
+- PR-AUC delta: `{pr_delta:.6f}` ({pr_label})
+- Recall at FPR <= 5% delta: `{recall_delta:.6f}`
+- FDR delta: `{fdr_delta:.6f}`
+- Precision@Top 1% delta: `{top1_delta:.6f}`
+
+## Non-Trivial Weights
+
+{markdown_table(non_trivial[["base_readable_model_name", "weight"]].round(6))}
+
+## Conclusions
+
+- Did blending improve PR-AUC over the best individual model? `{"yes" if pr_delta > 0 else "no"}`
+- Did blending improve recall at FPR <= 5%? `{"yes" if recall_delta > 0 else "no"}`
+- Did blending improve precision or reduce FDR? `{"yes" if fdr_delta < 0 else "no"}`
+- Did blending improve Precision@Top 1%? `{"yes" if top1_delta > 0 else "no"}`
+- Is the blend worth keeping over CatBoost alone? `{decision_label}`
+"""
+    (RESULTS_DIR / "03_weighted_blend_summary.md").write_text(summary, encoding="utf-8")
+
+    decision = f"""# Decision Checkpoint D2 - Weighted Score Blending
+
+## Checkpoint Name
+
+D2 weighted blend
+
+## Purpose
+
+Optimize score-level blends that include CatBoost and evaluate whether blending
+improves ranking, FPR-constrained recall, FDR, or top-K alert quality.
+
+## Candidates Or Options Evaluated
+
+{markdown_table(results[["readable_model_name", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct"]].round(6))}
+
+## Validation Metrics Used
+
+- validation PR-AUC;
+- validation recall at FPR <= 5%;
+- validation precision and FDR at FPR <= 5%;
+- validation Precision@Top 1%;
+- validation Recall@Top 1%.
+
+Weights were learned on validation only. Test metrics were generated but not used
+to choose weights or winners.
+
+## Decision Made
+
+`{decision_label}`
+
+## Promoted Candidates
+
+{markdown_table(results[results["model_id"] == best_blend["model_id"]][["readable_model_name", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct"]].round(6)) if promote else "_No D2 blend promoted as final candidate yet._"}
+
+## Discarded Candidates
+
+{markdown_table(results[results["model_id"] != best_blend["model_id"]][["readable_model_name", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct"]].round(6))}
+
+## Skipped Candidates
+
+- `skip for runtime`: exhaustive continuous optimization; a coarse simplex grid
+  plus sparse constrained grid was used instead.
+
+## Reason For The Decision
+
+{reason}
+
+PR-AUC improvement is `{pr_label}` by the configured thresholds.
+
+## Risks Or Limitations
+
+- Validation-only weight tuning can overfit month 6.
+- Blends add operational complexity relative to CatBoost alone.
+- D3 checks whether a stricter temporal design is worth the added complexity.
+
+## Next Step
+
+Run D3 temporal blending / stacking with out-of-time base predictions.
+"""
+    (RESULTS_DIR / "decision_checkpoint_D2_weighted_blend_decision.md").write_text(decision, encoding="utf-8")
+
+
+def run_d2() -> None:
+    ensure_output_dirs()
+    append_run_log("D2 started")
+    candidates, valid_score_frame, test_score_frame, base_ids = load_d1_score_inputs()
+    y_valid = valid_score_frame[TARGET].astype(int)
+    y_test = test_score_frame[TARGET].astype(int)
+    valid_matrix = valid_score_frame[base_ids].to_numpy(dtype=float)
+    test_matrix = test_score_frame[base_ids].to_numpy(dtype=float)
+
+    rows: list[dict] = []
+    weight_rows: list[dict] = []
+    score_outputs: dict[str, dict[str, np.ndarray]] = {}
+
+    uniform = np.repeat(1 / len(base_ids), len(base_ids))
+    add_weighted_blend_candidate(
+        rows,
+        weight_rows,
+        score_outputs,
+        base_ids,
+        candidates,
+        y_valid,
+        y_test,
+        valid_matrix,
+        test_matrix,
+        "A1_uniform_probability_average",
+        uniform,
+        "A1 uniform average of base probabilities.",
+    )
+    add_weighted_blend_candidate(
+        rows,
+        weight_rows,
+        score_outputs,
+        base_ids,
+        candidates,
+        y_valid,
+        y_test,
+        valid_matrix,
+        test_matrix,
+        "A2_uniform_rank_average",
+        uniform,
+        "A2 uniform average of within-model score ranks.",
+        rank_based=True,
+    )
+
+    coarse = simplex_grid(len(base_ids), step=0.25)
+    sparse = sparse_simplex_grid(len(base_ids), max_nonzero=3, step=0.10)
+    objectives = [
+        ("A3_weighted_probability_pr_auc", "pr_auc", coarse, "A3 weighted probability blend optimized for validation PR-AUC."),
+        ("A4_weighted_probability_recall_fpr5", "recall_fpr5", coarse, "A4 weighted blend optimized for recall subject to FPR <= 5%."),
+        ("A5_weighted_probability_precision_top1", "precision_top1", coarse, "A5 weighted blend optimized for Precision@Top 1%."),
+        ("A6_weighted_probability_fdr_reduction", "fdr_reduction", coarse, "A6 weighted blend optimized for FDR reduction with recall tie-break."),
+        ("A7_sparse_blend_max3", "pr_auc", sparse, "A7 sparse blend constrained to at most three base models."),
+    ]
+    for name_suffix, objective, grid, notes in objectives:
+        weights, _ = choose_weight_by_objective(y_valid, valid_matrix, grid, objective)
+        add_weighted_blend_candidate(
+            rows,
+            weight_rows,
+            score_outputs,
+            base_ids,
+            candidates,
+            y_valid,
+            y_test,
+            valid_matrix,
+            test_matrix,
+            name_suffix,
+            weights,
+            notes,
+        )
+
+    results = pd.DataFrame(rows)
+    weights = pd.DataFrame(weight_rows)
+    results.to_csv(RESULTS_DIR / "03_weighted_blend_results.csv", index=False)
+    weights.to_csv(RESULTS_DIR / "03_weighted_blend_weights.csv", index=False)
+    pd.DataFrame(
+        {"row_number": np.arange(len(y_valid)), TARGET: y_valid.to_numpy(), **{k: v["validation"] for k, v in score_outputs.items()}}
+    ).to_csv(RESULTS_DIR / "03_weighted_blend_validation_scores.csv", index=False)
+    pd.DataFrame(
+        {"row_number": np.arange(len(y_test)), TARGET: y_test.to_numpy(), **{k: v["test"] for k, v in score_outputs.items()}}
+    ).to_csv(RESULTS_DIR / "03_weighted_blend_test_scores.csv", index=False)
+    plot_d2_figures(results)
+    write_d2_summary_and_decision(results, weights, candidates)
+    append_run_log("D2 completed")
+    print("D2 completed")
+    print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D2_weighted_blend_decision.md'}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Holistic V2 focused checkpoints.")
     parser.add_argument(
         "--checkpoint",
-        choices=["D0", "D1"],
+        choices=["D0", "D1", "D2"],
         help="Checkpoint to run. More checkpoints are added as separate commits.",
     )
     parser.add_argument(
@@ -1357,6 +1768,7 @@ def main() -> None:
     if args.run_all:
         run_d0()
         run_d1()
+        run_d2()
         return
     if args.checkpoint == "D0":
         run_d0()
@@ -1364,7 +1776,10 @@ def main() -> None:
     if args.checkpoint == "D1":
         run_d1()
         return
-    raise SystemExit("Choose --checkpoint D0, --checkpoint D1, or --run-all.")
+    if args.checkpoint == "D2":
+        run_d2()
+        return
+    raise SystemExit("Choose --checkpoint D0, --checkpoint D1, --checkpoint D2, or --run-all.")
 
 
 if __name__ == "__main__":

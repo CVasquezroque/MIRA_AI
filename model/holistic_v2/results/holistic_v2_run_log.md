@@ -13,3 +13,5 @@
 - 2026-04-26T14:19:25 | D1 fitting LogisticRegression | rep=target_frequency | feat=full_advanced | balance=class_weight_balanced | loss=logloss | train=months_0_5 | ensemble=none
 - 2026-04-26T14:19:37 | D1 fitting LogisticRegression | rep=target_frequency | feat=full_advanced | balance=none | loss=logloss | train=months_0_5 | ensemble=none
 - 2026-04-26T14:21:06 | D1 completed
+- 2026-04-26T14:23:07 | D2 started
+- 2026-04-26T14:30:05 | D2 completed
