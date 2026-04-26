@@ -1,0 +1,198 @@
+{
+  "individual": [
+    {
+      "model_id": "catboost_rep_native_cat_feat_original_plus_basic_generated_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none",
+      "readable_model_name": "CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none",
+      "model_family": "CatBoost",
+      "representation": "native_cat",
+      "feature_set": "original_plus_basic_generated",
+      "balance_policy": "scale_pos_weight",
+      "loss_type": "logloss",
+      "train_strategy": "months_0_5",
+      "ensemble_type": "none",
+      "notes": "Native categorical CatBoost with positive-class weighting."
+    },
+    {
+      "model_id": "catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+      "readable_model_name": "CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=none | loss=logloss | train=months_0_5 | ensemble=none",
+      "model_family": "CatBoost",
+      "representation": "native_cat",
+      "feature_set": "original_plus_basic_generated",
+      "balance_policy": "none",
+      "loss_type": "logloss",
+      "train_strategy": "months_0_5",
+      "ensemble_type": "none",
+      "notes": "Native categorical CatBoost without class weighting."
+    },
+    {
+      "model_id": "xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none",
+      "readable_model_name": "XGBoost | rep=target_frequency | feat=full_advanced | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none",
+      "model_family": "XGBoost",
+      "representation": "target_frequency",
+      "feature_set": "full_advanced",
+      "balance_policy": "scale_pos_weight",
+      "loss_type": "logloss",
+      "train_strategy": "months_0_5",
+      "ensemble_type": "none",
+      "notes": "Target/frequency encoded XGBoost with scale_pos_weight."
+    },
+    {
+      "model_id": "xgboost_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+      "readable_model_name": "XGBoost | rep=target_frequency | feat=full_advanced | balance=none | loss=logloss | train=months_0_5 | ensemble=none",
+      "model_family": "XGBoost",
+      "representation": "target_frequency",
+      "feature_set": "full_advanced",
+      "balance_policy": "none",
+      "loss_type": "logloss",
+      "train_strategy": "months_0_5",
+      "ensemble_type": "none",
+      "notes": "Target/frequency encoded XGBoost without class weighting."
+    },
+    {
+      "model_id": "lightgbm_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none",
+      "readable_model_name": "LightGBM | rep=target_frequency | feat=full_advanced | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none",
+      "model_family": "LightGBM",
+      "representation": "target_frequency",
+      "feature_set": "full_advanced",
+      "balance_policy": "scale_pos_weight",
+      "loss_type": "logloss",
+      "train_strategy": "months_0_5",
+      "ensemble_type": "none",
+      "notes": "Target/frequency encoded LightGBM with scale_pos_weight."
+    },
+    {
+      "model_id": "lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+      "readable_model_name": "LightGBM | rep=target_frequency | feat=full_advanced | balance=none | loss=logloss | train=months_0_5 | ensemble=none",
+      "model_family": "LightGBM",
+      "representation": "target_frequency",
+      "feature_set": "full_advanced",
+      "balance_policy": "none",
+      "loss_type": "logloss",
+      "train_strategy": "months_0_5",
+      "ensemble_type": "none",
+      "notes": "Target/frequency encoded LightGBM without class weighting."
+    },
+    {
+      "model_id": "logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none",
+      "readable_model_name": "LogisticRegression | rep=target_frequency | feat=full_advanced | balance=class_weight_balanced | loss=logloss | train=months_0_5 | ensemble=none",
+      "model_family": "LogisticRegression",
+      "representation": "target_frequency",
+      "feature_set": "full_advanced",
+      "balance_policy": "class_weight_balanced",
+      "loss_type": "logloss",
+      "train_strategy": "months_0_5",
+      "ensemble_type": "none",
+      "notes": "Conservative linear benchmark with balanced class weights."
+    },
+    {
+      "model_id": "logisticregression_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+      "readable_model_name": "LogisticRegression | rep=target_frequency | feat=full_advanced | balance=none | loss=logloss | train=months_0_5 | ensemble=none",
+      "model_family": "LogisticRegression",
+      "representation": "target_frequency",
+      "feature_set": "full_advanced",
+      "balance_policy": "none",
+      "loss_type": "logloss",
+      "train_strategy": "months_0_5",
+      "ensemble_type": "none",
+      "notes": "Conservative linear benchmark without class weights."
+    }
+  ],
+  "ensembles": [
+    {
+      "model_id": "blend_rep_scores_feat_mixed_balance_mixed_loss_mixed_train_uniform_score_ensemble_weighted_score_blend_cat_xgb_lgbm_lr",
+      "readable_model_name": "Blend | rep=scores | feat=mixed | balance=mixed | loss=mixed | train=uniform_score | ensemble=weighted_score_blend_cat_xgb_lgbm_lr",
+      "model_family": "Blend",
+      "representation": "scores",
+      "feature_set": "mixed",
+      "balance_policy": "mixed",
+      "loss_type": "mixed",
+      "train_strategy": "uniform_score",
+      "ensemble_type": "weighted_score_blend_cat_xgb_lgbm_lr",
+      "notes": "Uniform probability blend over strongest base model per family. Base model ids: ['catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none', 'xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none', 'lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none', 'logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none']; weights=[0.25, 0.25, 0.25, 0.25]",
+      "base_model_ids": [
+        "catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+        "xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none",
+        "lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+        "logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none"
+      ],
+      "weights": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    {
+      "model_id": "blend_rep_scores_feat_mixed_balance_mixed_loss_mixed_train_validation_weighted_ensemble_validation_pr_auc_weighted_score_blend_cat_xgb_lgbm_lr",
+      "readable_model_name": "Blend | rep=scores | feat=mixed | balance=mixed | loss=mixed | train=validation_weighted | ensemble=validation_pr_auc_weighted_score_blend_cat_xgb_lgbm_lr",
+      "model_family": "Blend",
+      "representation": "scores",
+      "feature_set": "mixed",
+      "balance_policy": "mixed",
+      "loss_type": "mixed",
+      "train_strategy": "validation_weighted",
+      "ensemble_type": "validation_pr_auc_weighted_score_blend_cat_xgb_lgbm_lr",
+      "notes": "Validation PR-AUC weighted soft blend; D2 will tune weights more rigorously. Base model ids: ['catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none', 'xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none', 'lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none', 'logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none']; weights=[0.260125, 0.254644, 0.25117, 0.234062]",
+      "base_model_ids": [
+        "catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+        "xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none",
+        "lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+        "logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none"
+      ],
+      "weights": [
+        0.2601245532911235,
+        0.2546438570352972,
+        0.25116959374797276,
+        0.2340619959256064
+      ]
+    },
+    {
+      "model_id": "temporalblend_rep_scores_feat_mixed_balance_mixed_loss_mixed_train_time_aware_month5_ensemble_time_aware_month5_weighted_score_blend",
+      "readable_model_name": "TemporalBlend | rep=scores | feat=mixed | balance=mixed | loss=mixed | train=time_aware_month5 | ensemble=time_aware_month5_weighted_score_blend",
+      "model_family": "TemporalBlend",
+      "representation": "scores",
+      "feature_set": "mixed",
+      "balance_policy": "mixed",
+      "loss_type": "mixed",
+      "train_strategy": "time_aware_month5",
+      "ensemble_type": "time_aware_month5_weighted_score_blend",
+      "notes": "Weights learned from month-5 out-of-time base scores from inner temporal fits. Base model ids: ['catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none', 'xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none', 'lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none', 'logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none']; weights=[0.266184, 0.250276, 0.262476, 0.221063]",
+      "base_model_ids": [
+        "catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+        "xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none",
+        "lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+        "logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none"
+      ],
+      "weights": [
+        0.2661844327601681,
+        0.25027623157101164,
+        0.26247617564786396,
+        0.22106316002095625
+      ]
+    },
+    {
+      "model_id": "blend_rep_scores_feat_mixed_balance_mixed_loss_mixed_train_rank_average_ensemble_rank_average_cat_xgb_lgbm_lr",
+      "readable_model_name": "Blend | rep=scores | feat=mixed | balance=mixed | loss=mixed | train=rank_average | ensemble=rank_average_cat_xgb_lgbm_lr",
+      "model_family": "Blend",
+      "representation": "scores",
+      "feature_set": "mixed",
+      "balance_policy": "mixed",
+      "loss_type": "mixed",
+      "train_strategy": "rank_average",
+      "ensemble_type": "rank_average_cat_xgb_lgbm_lr",
+      "notes": "Uniform rank-average score blend. Base model ids: ['catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none', 'xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none', 'lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none', 'logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none'].",
+      "base_model_ids": [
+        "catboost_rep_native_cat_feat_original_plus_basic_generated_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+        "xgboost_rep_target_frequency_feat_full_advanced_balance_scale_pos_weight_loss_logloss_train_months_0_5_ensemble_none",
+        "lightgbm_rep_target_frequency_feat_full_advanced_balance_none_loss_logloss_train_months_0_5_ensemble_none",
+        "logisticregression_rep_target_frequency_feat_full_advanced_balance_class_weight_balanced_loss_logloss_train_months_0_5_ensemble_none"
+      ],
+      "weights": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ]
+    }
+  ]
+}

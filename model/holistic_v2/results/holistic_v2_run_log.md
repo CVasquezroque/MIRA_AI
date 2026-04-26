@@ -2,3 +2,14 @@
 - 2026-04-26T14:10:23 | D0 started
 - 2026-04-26T14:10:45 | D0 started
 - 2026-04-26T14:10:54 | D0 completed
+- 2026-04-26T14:14:38 | D1 started
+- 2026-04-26T14:17:13 | D1 started
+- 2026-04-26T14:17:17 | D1 fitting CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none
+- 2026-04-26T14:18:04 | D1 fitting CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=none | loss=logloss | train=months_0_5 | ensemble=none
+- 2026-04-26T14:18:54 | D1 fitting XGBoost | rep=target_frequency | feat=full_advanced | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none
+- 2026-04-26T14:19:02 | D1 fitting XGBoost | rep=target_frequency | feat=full_advanced | balance=none | loss=logloss | train=months_0_5 | ensemble=none
+- 2026-04-26T14:19:09 | D1 fitting LightGBM | rep=target_frequency | feat=full_advanced | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none
+- 2026-04-26T14:19:17 | D1 fitting LightGBM | rep=target_frequency | feat=full_advanced | balance=none | loss=logloss | train=months_0_5 | ensemble=none
+- 2026-04-26T14:19:25 | D1 fitting LogisticRegression | rep=target_frequency | feat=full_advanced | balance=class_weight_balanced | loss=logloss | train=months_0_5 | ensemble=none
+- 2026-04-26T14:19:37 | D1 fitting LogisticRegression | rep=target_frequency | feat=full_advanced | balance=none | loss=logloss | train=months_0_5 | ensemble=none
+- 2026-04-26T14:21:06 | D1 completed
