@@ -37,3 +37,23 @@
 - 2026-04-27T00:01:50 | D4 fitting C1 score-band hard negative CatBoost
 - 2026-04-27T00:05:25 | D4 fitting C2 two-stage alert filter
 - 2026-04-27T00:05:45 | D4 completed
+- 2026-04-27T00:07:11 | D5 started
+- 2026-04-27T00:07:18 | D5 fitting XGBoost standard logloss balance=scale_pos_weight
+- 2026-04-27T00:07:32 | D5 fitting XGBoost standard logloss balance=none
+- 2026-04-27T00:07:46 | D5 fitting focal-loss XGBoost alpha=0.25 gamma=1.0
+- 2026-04-27T00:08:03 | D5 fitting focal-loss XGBoost alpha=0.25 gamma=2.0
+- 2026-04-27T00:08:22 | D5 fitting focal-loss XGBoost alpha=0.25 gamma=3.0
+- 2026-04-27T00:08:42 | D5 fitting focal-loss XGBoost alpha=0.25 gamma=4.0
+- 2026-04-27T00:09:03 | D5 fitting focal-loss XGBoost alpha=0.5 gamma=1.0
+- 2026-04-27T00:09:21 | D5 fitting focal-loss XGBoost alpha=0.5 gamma=2.0
+- 2026-04-27T00:09:36 | D5 fitting focal-loss XGBoost alpha=0.5 gamma=3.0
+- 2026-04-27T00:09:49 | D5 fitting focal-loss XGBoost alpha=0.5 gamma=4.0
+- 2026-04-27T00:10:03 | D5 fitting focal-loss XGBoost alpha=0.75 gamma=1.0
+- 2026-04-27T00:10:14 | D5 fitting focal-loss XGBoost alpha=0.75 gamma=2.0
+- 2026-04-27T00:10:25 | D5 fitting focal-loss XGBoost alpha=0.75 gamma=3.0
+- 2026-04-27T00:10:38 | D5 fitting focal-loss XGBoost alpha=0.75 gamma=4.0
+- 2026-04-27T00:10:52 | D5 fitting focal-loss XGBoost alpha=0.9 gamma=1.0
+- 2026-04-27T00:11:03 | D5 fitting focal-loss XGBoost alpha=0.9 gamma=2.0
+- 2026-04-27T00:11:15 | D5 fitting focal-loss XGBoost alpha=0.9 gamma=3.0
+- 2026-04-27T00:11:28 | D5 fitting focal-loss XGBoost alpha=0.9 gamma=4.0
+- 2026-04-27T00:11:42 | D5 completed

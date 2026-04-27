@@ -2384,12 +2384,166 @@ Run D5 tuned focal-loss XGBoost.
     print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D4_hard_negative_decision.md'}")
 
 
+def run_d5() -> None:
+    ensure_output_dirs()
+    append_run_log("D5 started")
+    from advanced_feature_modeling import (
+        focal_binary_objective,
+        make_target_frequency_pipeline,
+        make_xgboost,
+        model_scores,
+    )
+    from xgboost import XGBClassifier
+
+    metadata = load_d0_metadata()
+    data = load_data()
+    splits = chronological_split(data)
+    train_sample = stratified_sample_frame(splits.train, D1_TRAIN_MAX_ROWS)
+    drop_cols = feature_drop_columns(metadata.get("leakage_exclusions", []))
+    X_train = make_feature_matrix(train_sample, drop_cols)
+    y_train = train_sample[TARGET].copy()
+    X_valid = make_feature_matrix(splits.valid, drop_cols)
+    y_valid = splits.valid[TARGET].copy()
+    X_test = make_feature_matrix(splits.test, drop_cols)
+    y_test = splits.test[TARGET].copy()
+    valid_prevalence = float(y_valid.mean())
+    test_prevalence = float(y_test.mean())
+    scale_pos_weight = float((len(y_train) - y_train.sum()) / y_train.sum())
+
+    rows: list[dict] = []
+    score_registry: dict[str, dict[str, np.ndarray]] = {}
+
+    # Baselines: standard logloss XGBoost
+    for spw, balance_label in [(scale_pos_weight, "scale_pos_weight"), (1.0, "none")]:
+        append_run_log(f"D5 fitting XGBoost standard logloss balance={balance_label}")
+        pipe = make_target_frequency_pipeline(make_xgboost(True, spw))
+        pipe.fit(X_train, y_train)
+        valid_scores = model_scores(pipe, X_valid)
+        test_scores = model_scores(pipe, X_test)
+        spec = make_candidate_spec(
+            "XGBoost", "target_frequency", "full_advanced",
+            balance_label, "logloss", "months_0_5", "none",
+            f"D5 baseline XGBoost standard logloss balance={balance_label}.",
+        )
+        add_evaluated_candidate(rows, score_registry, spec, y_valid, y_test,
+                                valid_scores, test_scores, valid_prevalence, test_prevalence)
+
+    # Focal loss grid
+    alphas = [0.25, 0.50, 0.75, 0.90]
+    gammas = [1.0, 2.0, 3.0, 4.0]
+    for alpha in alphas:
+        for gamma in gammas:
+            append_run_log(f"D5 fitting focal-loss XGBoost alpha={alpha} gamma={gamma}")
+            obj = focal_binary_objective(alpha=alpha, gamma=gamma)
+            model = XGBClassifier(
+                objective=obj, eval_metric="aucpr", tree_method="hist",
+                n_estimators=180, max_depth=4, learning_rate=0.055,
+                subsample=0.88, colsample_bytree=0.76, min_child_weight=3,
+                gamma=2.34, reg_lambda=0.60, scale_pos_weight=1.0,
+                random_state=RANDOM_STATE, n_jobs=-1,
+            )
+            pipe = make_target_frequency_pipeline(model)
+            pipe.fit(X_train, y_train)
+            valid_scores = model_scores(pipe, X_valid)
+            test_scores = model_scores(pipe, X_test)
+            spec = make_candidate_spec(
+                "FocalXGBoost", "target_frequency", "full_advanced",
+                "none", f"focal_a{alpha}_g{gamma}", "months_0_5", "none",
+                f"Focal-loss XGBoost alpha={alpha} gamma={gamma}.",
+            )
+            add_evaluated_candidate(rows, score_registry, spec, y_valid, y_test,
+                                    valid_scores, test_scores, valid_prevalence, test_prevalence)
+
+    results = pd.DataFrame(rows)
+    results.to_csv(RESULTS_DIR / "06_focal_loss_results.csv", index=False)
+
+    # Decision
+    baselines = results[results["model_family"] == "XGBoost"]
+    best_baseline = baselines.sort_values("validation_pr_auc", ascending=False).iloc[0]
+    focals = results[results["model_family"] == "FocalXGBoost"]
+    best_focal = focals.sort_values(
+        ["validation_precision_top_1pct", "validation_pr_auc", "validation_recall_at_fpr5"],
+        ascending=False,
+    ).iloc[0] if not focals.empty else best_baseline
+    pr_delta = float(best_focal["validation_pr_auc"] - best_baseline["validation_pr_auc"])
+    fdr_delta = float(best_focal["validation_fdr_at_fpr5"] - best_baseline["validation_fdr_at_fpr5"])
+    recall_delta = float(best_focal["validation_recall_at_fpr5"] - best_baseline["validation_recall_at_fpr5"])
+    top1_delta = float(best_focal["validation_precision_top_1pct"] - best_baseline["validation_precision_top_1pct"])
+    promote = (pr_delta >= 0.001 or top1_delta > 0.005 or recall_delta > 0.01) and fdr_delta <= 0.005
+    decision_label = "promote" if promote else "keep as benchmark"
+    reason = (
+        "Focal-loss XGBoost improved at least one operational metric versus standard logloss."
+        if promote
+        else "Focal-loss XGBoost did not clearly beat standard logloss XGBoost in operational metrics."
+    )
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    for family, marker in [("XGBoost", "s"), ("FocalXGBoost", "o")]:
+        subset = results[results["model_family"] == family]
+        ax.scatter(subset["validation_pr_auc"], subset["validation_precision_top_1pct"],
+                   s=80, marker=marker, label=family)
+    ax.set_xlabel("Validation PR-AUC")
+    ax.set_ylabel("Validation Precision@Top 1%")
+    ax.set_title("D5 Focal Loss Grid: PR-AUC vs Precision@Top1%")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "06_focal_loss_grid.png", dpi=150)
+    plt.close(fig)
+
+    decision = f"""# Decision Checkpoint D5 - Tuned Focal-Loss XGBoost
+
+## Checkpoint Name
+
+D5 tuned focal loss
+
+## Purpose
+
+Evaluate a controlled grid of focal-loss XGBoost (alpha x gamma) against standard
+logloss XGBoost baselines.
+
+## Grid Evaluated
+
+- alpha: {alphas}
+- gamma: {gammas}
+- Total focal candidates: {len(focals)}
+
+## Candidates Or Options Evaluated
+
+{markdown_table(results[["readable_model_name", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct"]].round(6))}
+
+## Best Focal Candidate
+
+`{best_focal["readable_model_name"]}`
+
+- PR-AUC delta vs best standard: `{pr_delta:.6f}`
+- FDR delta: `{fdr_delta:.6f}`
+- Recall delta: `{recall_delta:.6f}`
+- Precision@Top 1% delta: `{top1_delta:.6f}`
+
+## Decision Made
+
+`{decision_label}`
+
+## Reason For The Decision
+
+{reason}
+
+## Next Step
+
+Run D6 feature ablations over the top 5 baseline candidates.
+"""
+    (RESULTS_DIR / "decision_checkpoint_D5_focal_loss_decision.md").write_text(decision, encoding="utf-8")
+    append_run_log("D5 completed")
+    print("D5 completed")
+    print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D5_focal_loss_decision.md'}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Holistic V2 focused checkpoints.")
     parser.add_argument(
         "--checkpoint",
-        choices=["D0", "D1", "D2", "D3", "D4"],
-        help="Checkpoint to run. More checkpoints are added as separate commits.",
+        choices=["D0", "D1", "D2", "D3", "D4", "D5"],
+        help="Checkpoint to run.",
     )
     parser.add_argument(
         "--run-all",
@@ -2407,23 +2561,16 @@ def main() -> None:
         run_d2()
         run_d3()
         run_d4()
+        run_d5()
         return
-    if args.checkpoint == "D0":
-        run_d0()
+    dispatch = {
+        "D0": run_d0, "D1": run_d1, "D2": run_d2, "D3": run_d3,
+        "D4": run_d4, "D5": run_d5,
+    }
+    if args.checkpoint in dispatch:
+        dispatch[args.checkpoint]()
         return
-    if args.checkpoint == "D1":
-        run_d1()
-        return
-    if args.checkpoint == "D2":
-        run_d2()
-        return
-    if args.checkpoint == "D3":
-        run_d3()
-        return
-    if args.checkpoint == "D4":
-        run_d4()
-        return
-    raise SystemExit("Choose --checkpoint D0..D4, or --run-all.")
+    raise SystemExit("Choose --checkpoint D0..D5, or --run-all.")
 
 
 if __name__ == "__main__":
