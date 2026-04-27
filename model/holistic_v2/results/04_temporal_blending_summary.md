@@ -1,32 +1,13 @@
-# D3 Temporal Blending Summary
+# Decision Checkpoint D3 - Temporal Blending Summary
 
-## Best Temporal Candidate
+- Did temporal blending beat best individual CatBoost in validation PR-AUC? `Yes` (Delta: 0.002153)
+- Did it beat best D2 weighted blend in validation PR-AUC? `No` (Delta: -0.001318)
+- Did it improve Precision@Top1%? `No`
+- Did it reduce FDR? `No`
+- Did it improve recall at FPR <= 5%? `No`
+- Is the added complexity justified? `No`
 
-`TemporalBlend | rep=oof_scores | feat=mixed | balance=mixed | loss=mixed | train=temporal_oof | ensemble=temporal_uniform_rank_blend`
+## Final D3 decision
+`keep as benchmark`
 
-## Comparison Target
-
-`Blend | rep=scores | feat=mixed | balance=mixed | loss=mixed | train=validation_weighted | ensemble=A5_weighted_probability_precision_top1`
-
-## Validation Deltas
-
-- PR-AUC delta: `0.001780`
-- Precision@Top 1% delta: `-0.007394`
-- FDR delta: `0.000494`
-- Recall at FPR <= 5% delta: `-0.002069`
-
-## Fold Stability Proxy
-
-| month | oof_pr_auc |
-| ----- | ---------- |
-| 3     | 0.153554   |
-| 4     | 0.177270   |
-| 5     | 0.176512   |
-
-## Answers
-
-- Does temporal blending beat the best individual model? `yes`
-- Does it improve top-K precision? `no`
-- Does it reduce FDR? `no`
-- Is the improvement large enough to justify complexity? `keep as benchmark`
-- Does the temporal design avoid leakage? `yes, base OOF scores are generated only from prior months.`
+Temporal blending did not clearly outperform the simpler weighted blend. Keep as benchmark. Do not promote as final model.

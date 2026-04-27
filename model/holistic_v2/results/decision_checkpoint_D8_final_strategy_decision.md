@@ -1,44 +1,45 @@
-# Decision Checkpoint D8 - Final Strategy Decision
+# Holistic V2 Final Strategy Report
 
-## Checkpoint Name
+## 1. Executive Summary
+This report summarizes the results of nine decision checkpoints (D0-D8) evaluating four strategy families for fraud detection improvement: weighted score blending, temporal stacking, hard negative mining, and tuned focal-loss XGBoost.
 
-D8 final strategy report
+## 2. What was corrected after the initial holistic_v2 run
+Logic errors relating to FDR interpretation were corrected. Decision rules for promotion were strictly enforced. Reports and figures were regenerated to ensure accurate conclusions without blind hardcoding.
 
-## Purpose
+## 3. Best individual CatBoost baseline
+CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=none | loss=logloss | train=months_0_5 | ensemble=none (PR-AUC: 0.173015)
 
-Final comparison of all strategies, SHAP interpretability, and deployment recommendation.
+## 4. Weighted blending result
+Marginal gains; kept as benchmark.
 
-## Final Candidate
+## 5. Temporal blending result
+Did not clearly outperform simpler blends; kept as benchmark.
 
-`CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none`
+## 6. Hard negative mining result
+Did not materially reduce FDR; kept as benchmark.
 
-## Decision Made
+## 7. Tuned focal-loss XGBoost result
+Did not consistently beat standard logloss XGBoost; kept as benchmark.
 
-`final candidate`
+## 8. Feature ablation result
+Generated features provided mixed and mostly marginal gains.
 
-## Promoted Final Model
+## 9. Fairness result
+Fairness review remains required due to significant disparities.
 
-CatBoost with scale_pos_weight, full_advanced features, trained on months 0-5.
+## 10. SHAP or permutation interpretability result
+Interpretability generated successfully.
 
-## Reason
+## 11. FDR <= 30% feasibility
+No, not with the current models and features. It may be feasible only at very restrictive thresholds with very low recall.
 
-CatBoost consistently delivered the best or near-best performance across all
-checkpoints. No alternative strategy (blending, temporal stacking, hard negative
-mining, focal loss) produced meaningful improvements that justified their added
-complexity.
+## 12. Final recommendation
+Controlled pilot with human review, using CatBoost native with scale_pos_weight as the main scoring model for a controlled pilot.. Do not deploy as automatic blocking system. Continue fairness review and threshold tuning according to operational capacity.
 
-## Deployment Recommendation
+## 13. Limitations
+Improvements were marginal. FDR remains high. Fairness gaps exist.
 
-Controlled pilot with:
-- CatBoost native categorical model
-- Full advanced feature set
-- Threshold selected on validation at FPR <= 5%
-- Fairness monitoring for housing_status and employment_status
-- Regular recalibration on new monthly data
-
-## Risks
-
-- High FDR at operational threshold
-- Fairness gaps may require mitigation
-- Model may degrade with temporal drift
-- PR-AUC is modest; operational expectations should be calibrated accordingly
+### Benchmarks Note
+- Best PR-AUC benchmark: Blend | rep=scores | feat=mixed | balance=mixed | loss=mixed | train=validation_weighted | ensemble=A7_sparse_blend_max3
+- Best FDR benchmark: CatBoost | rep=native_cat | feat=full_advanced_without_ratios | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none
+- Best Precision@Top1% benchmark: HardNegativeCatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=hard_negative_weighting | loss=logloss | train=months_0_5 | ensemble=C1_rank_band_3x

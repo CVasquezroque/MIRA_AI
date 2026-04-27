@@ -1,100 +1,45 @@
 # Holistic V2 Final Strategy Report
 
-## Executive Summary
+## 1. Executive Summary
+This report summarizes the results of nine decision checkpoints (D0-D8) evaluating four strategy families for fraud detection improvement: weighted score blending, temporal stacking, hard negative mining, and tuned focal-loss XGBoost.
 
-This report summarizes the results of nine decision checkpoints (D0-D8) evaluating
-four strategy families for fraud detection improvement: weighted score blending,
-temporal stacking, hard negative mining, and tuned focal-loss XGBoost.
+## 2. What was corrected after the initial holistic_v2 run
+Logic errors relating to FDR interpretation were corrected. Decision rules for promotion were strictly enforced. Reports and figures were regenerated to ensure accurate conclusions without blind hardcoding.
 
-## Finalist Model
+## 3. Best individual CatBoost baseline
+CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=none | loss=logloss | train=months_0_5 | ensemble=none (PR-AUC: 0.173015)
 
-`CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none`
+## 4. Weighted blending result
+Marginal gains; kept as benchmark.
 
-### Validation Metrics
-- PR-AUC: `0.170692`
-- Recall at FPR <= 5%: `0.512414`
-- FDR at FPR <= 5%: `0.877534`
+## 5. Temporal blending result
+Did not clearly outperform simpler blends; kept as benchmark.
 
-### Test Metrics (final evaluation only)
-- Test PR-AUC: `0.205388`
-- Test Recall at FPR <= 5%: `0.49299719887955185`
-- Test FDR at FPR <= 5%: `0.8334122101277804`
+## 6. Hard negative mining result
+Did not materially reduce FDR; kept as benchmark.
 
-## Final Comparison Table
+## 7. Tuned focal-loss XGBoost result
+Did not consistently beat standard logloss XGBoost; kept as benchmark.
 
-See `09_final_strategy_decision_table.csv` for the full comparison.
+## 8. Feature ablation result
+Generated features provided mixed and mostly marginal gains.
 
-## Answers To Key Questions
+## 9. Fairness result
+Fairness review remains required due to significant disparities.
 
-### 1. Did any new strategy beat CatBoost meaningfully?
+## 10. SHAP or permutation interpretability result
+Interpretability generated successfully.
 
-No strategy produced a PR-AUC improvement >= 0.005 (the meaningful threshold)
-over CatBoost with scale_pos_weight. The best D2 blend showed marginal gains
-in precision and recall, but PR-AUC delta was negligible.
+## 11. FDR <= 30% feasibility
+No, not with the current models and features. It may be feasible only at very restrictive thresholds with very low recall.
 
-### 2. Did any new strategy reduce false positives materially?
+## 12. Final recommendation
+Controlled pilot with human review, using CatBoost native with scale_pos_weight as the main scoring model for a controlled pilot.. Do not deploy as automatic blocking system. Continue fairness review and threshold tuning according to operational capacity.
 
-Hard negative mining (D4) achieved a small FDR reduction (~0.003) but below the
-0.005 threshold for material improvement. Threshold tightening was the most
-effective way to reduce FP, at the cost of recall.
+## 13. Limitations
+Improvements were marginal. FDR remains high. Fairness gaps exist.
 
-### 3. Did any new strategy improve FDR?
-
-Marginal improvements only. No strategy achieved FDR <= 30% at useful alert volume.
-
-### 4. Is FDR <= 30% feasible at useful alert volume?
-
-`Potentially, but only at very restrictive thresholds that sacrifice recall significantly.`
-
-### 5. Did hard negative mining work?
-
-`No. Hard negative mining produced marginal FDR reductions insufficient to justify the added complexity.`
-
-### 6. Did focal loss work when properly tuned?
-
-`Yes, focal loss improved operational metrics.`
-
-### 7. Did weighted blending with CatBoost help?
-
-`Yes, the D2 blend was promoted with small operational improvements.`
-
-### 8. Did temporal blending help?
-
-`Yes, temporal blending improved metrics.`
-
-### 9. Which generated features are worth keeping?
-
-Based on D6 ablation, the full_advanced feature set generally performs best.
-Missing flags, log features, and ratio features contribute positively.
-Interaction features show mixed impact.
-
-### 10. Which ratio features are worth keeping?
-
-Ratio features (velocity_6h_to_24h, velocity_24h_to_4w, credit_limit_to_income, etc.)
-contribute positively to PR-AUC. They should be retained in the production pipeline.
-
-### 11. Which interaction features are worth keeping?
-
-Interaction features show inconsistent gains. They may be retained but are not
-critical. device_os__source and payment_type__credit_limit_bin are the most useful.
-
-### 12. Final recommendation?
-
-**CatBoost only** with `scale_pos_weight` and `full_advanced` features is the
-recommended production model. Blending adds marginal gains but increases complexity.
-Hard negative mining and focal loss did not justify their complexity.
-
-A controlled pilot is recommended before full deployment, with fairness review
-for housing_status and employment_status groups.
-
-## SHAP Interpretability
-
-SHAP generation failed; install `shap` package for interpretability.
-
-## Caution
-
-- All improvements over the CatBoost baseline were marginal or negligible.
-- PR-AUC remains modest (~0.17), reflecting the inherent difficulty of the fraud task.
-- FDR is high (>85%) at the FPR<=5% operating point, meaning most alerts are false positives.
-- Any deployment should use a careful threshold tuned to operational capacity.
-- Fairness review is required before deployment.
+### Benchmarks Note
+- Best PR-AUC benchmark: Blend | rep=scores | feat=mixed | balance=mixed | loss=mixed | train=validation_weighted | ensemble=A7_sparse_blend_max3
+- Best FDR benchmark: CatBoost | rep=native_cat | feat=full_advanced_without_ratios | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none
+- Best Precision@Top1% benchmark: HardNegativeCatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=hard_negative_weighting | loss=logloss | train=months_0_5 | ensemble=C1_rank_band_3x

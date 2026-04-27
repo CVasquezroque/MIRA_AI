@@ -1,32 +1,16 @@
-# D2 Weighted Blend Summary
+# Decision Checkpoint D2 - Weighted Blending Summary
 
-## Best Individual Benchmark
+- Best individual CatBoost baseline PR-AUC: `0.173015`
+- Best weighted blend validation PR-AUC: `0.176485`
+- Best weighted blend validation Precision@Top1%: `0.268022`
+- Best weighted blend validation FDR: `0.876733`
 
-`CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=none | loss=logloss | train=months_0_5 | ensemble=none`
+## Deltas vs CatBoost
+- PR-AUC delta: `0.003470` (marginal)
+- FDR delta: `-0.001521` (marginal)
+- Precision@Top1% delta: `-0.001848` (negligible)
 
-## Best Weighted Blend
+## Final D2 decision
+`keep as benchmark`
 
-`Blend | rep=scores | feat=mixed | balance=mixed | loss=mixed | train=validation_weighted | ensemble=A5_weighted_probability_precision_top1`
-
-## Validation Deltas Versus Best Individual
-
-- PR-AUC delta: `0.000372` (negligible)
-- Recall at FPR <= 5% delta: `0.007586`
-- FDR delta: `-0.001629`
-- Precision@Top 1% delta: `0.008318`
-
-## Non-Trivial Weights
-
-| base_readable_model_name                                                                                                                         | weight   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
-| CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=scale_pos_weight | loss=logloss | train=months_0_5 | ensemble=none      | 0.500000 |
-| CatBoost | rep=native_cat | feat=original_plus_basic_generated | balance=none | loss=logloss | train=months_0_5 | ensemble=none                  | 0.250000 |
-| LogisticRegression | rep=target_frequency | feat=full_advanced | balance=class_weight_balanced | loss=logloss | train=months_0_5 | ensemble=none | 0.250000 |
-
-## Conclusions
-
-- Did blending improve PR-AUC over the best individual model? `yes`
-- Did blending improve recall at FPR <= 5%? `yes`
-- Did blending improve precision or reduce FDR? `yes`
-- Did blending improve Precision@Top 1%? `yes`
-- Is the blend worth keeping over CatBoost alone? `promote`
+Weighted blending produced at most marginal ranking improvements. It did not materially reduce FDR or false-positive burden. Keep as benchmark, not as final operational replacement.
