@@ -57,3 +57,16 @@
 - 2026-04-27T00:11:15 | D5 fitting focal-loss XGBoost alpha=0.9 gamma=3.0
 - 2026-04-27T00:11:28 | D5 fitting focal-loss XGBoost alpha=0.9 gamma=4.0
 - 2026-04-27T00:11:42 | D5 completed
+- 2026-04-27T00:13:12 | D6 started
+- 2026-04-27T00:13:16 | D6 ablation full_advanced CatBoost
+- 2026-04-27T00:14:22 | D6 ablation original_only CatBoost
+- 2026-04-27T00:15:17 | D6 ablation original_without_sensitive CatBoost
+- 2026-04-27T00:16:12 | D6 ablation missing_flags_only CatBoost
+- 2026-04-27T00:17:07 | D6 ablation outlier_flags_only CatBoost
+- 2026-04-27T00:17:58 | D6 ablation log_features_only CatBoost
+- 2026-04-27T00:18:56 | D6 ablation ratios_only CatBoost
+- 2026-04-27T00:19:47 | D6 ablation interactions_only CatBoost
+- 2026-04-27T00:20:44 | D6 ablation full_advanced_without_ratios CatBoost
+- 2026-04-27T00:21:43 | D6 ablation full_advanced_without_interactions CatBoost
+- 2026-04-27T00:22:40 | D6 ablation full_advanced_without_sensitive CatBoost
+- 2026-04-27T00:23:51 | D6 completed

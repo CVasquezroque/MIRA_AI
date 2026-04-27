@@ -2538,11 +2538,162 @@ Run D6 feature ablations over the top 5 baseline candidates.
     print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D5_focal_loss_decision.md'}")
 
 
+ABLATION_SETS = {
+    "full_advanced": {"add_missing_flags": True, "add_outlier_flags": True, "add_log_features": True, "add_ratio_features": True, "add_interaction_features": True},
+    "original_only": {"add_missing_flags": False, "add_outlier_flags": False, "add_log_features": False, "add_ratio_features": False, "add_interaction_features": False},
+    "original_without_sensitive": {"add_missing_flags": False, "add_outlier_flags": False, "add_log_features": False, "add_ratio_features": False, "add_interaction_features": False},
+    "missing_flags_only": {"add_missing_flags": True, "add_outlier_flags": False, "add_log_features": False, "add_ratio_features": False, "add_interaction_features": False},
+    "outlier_flags_only": {"add_missing_flags": False, "add_outlier_flags": True, "add_log_features": False, "add_ratio_features": False, "add_interaction_features": False},
+    "log_features_only": {"add_missing_flags": False, "add_outlier_flags": False, "add_log_features": True, "add_ratio_features": False, "add_interaction_features": False},
+    "ratios_only": {"add_missing_flags": False, "add_outlier_flags": False, "add_log_features": False, "add_ratio_features": True, "add_interaction_features": False},
+    "interactions_only": {"add_missing_flags": False, "add_outlier_flags": False, "add_log_features": False, "add_ratio_features": False, "add_interaction_features": True},
+    "full_advanced_without_ratios": {"add_missing_flags": True, "add_outlier_flags": True, "add_log_features": True, "add_ratio_features": False, "add_interaction_features": True},
+    "full_advanced_without_interactions": {"add_missing_flags": True, "add_outlier_flags": True, "add_log_features": True, "add_ratio_features": True, "add_interaction_features": False},
+    "full_advanced_without_sensitive": {"add_missing_flags": True, "add_outlier_flags": True, "add_log_features": True, "add_ratio_features": True, "add_interaction_features": True},
+}
+
+
+def run_d6() -> None:
+    ensure_output_dirs()
+    append_run_log("D6 started")
+    from advanced_feature_modeling import (
+        AdvancedFeatureBuilder,
+        TemporalTargetFrequencyEncoder,
+        DataFrameMedianImputer,
+        catboost_scores,
+        categorical_columns as cat_cols_fn,
+        model_scores,
+        make_lightgbm,
+        make_xgboost,
+    )
+    from catboost import CatBoostClassifier
+    from sklearn.pipeline import Pipeline
+
+    metadata = load_d0_metadata()
+    data = load_data()
+    splits = chronological_split(data)
+    train_sample = stratified_sample_frame(splits.train, D1_TRAIN_MAX_ROWS)
+    drop_cols = feature_drop_columns(metadata.get("leakage_exclusions", []))
+    X_train = make_feature_matrix(train_sample, drop_cols)
+    y_train = train_sample[TARGET].copy()
+    X_valid = make_feature_matrix(splits.valid, drop_cols)
+    y_valid = splits.valid[TARGET].copy()
+    X_test = make_feature_matrix(splits.test, drop_cols)
+    y_test = splits.test[TARGET].copy()
+    valid_prevalence = float(y_valid.mean())
+    test_prevalence = float(y_test.mean())
+    scale_pos_weight = float((len(y_train) - y_train.sum()) / y_train.sum())
+
+    sensitive_cols = PROTECTED_CANDIDATES
+
+    rows: list[dict] = []
+    score_registry: dict[str, dict[str, np.ndarray]] = {}
+
+    for feat_set_name, builder_kwargs in ABLATION_SETS.items():
+        append_run_log(f"D6 ablation {feat_set_name} CatBoost")
+        builder = AdvancedFeatureBuilder(**builder_kwargs)
+        X_train_ab = builder.fit_transform(X_train, y_train).drop(columns=["month"], errors="ignore")
+        X_valid_ab = builder.transform(X_valid).drop(columns=["month"], errors="ignore")
+        X_test_ab = builder.transform(X_test).drop(columns=["month"], errors="ignore")
+
+        if "without_sensitive" in feat_set_name:
+            for col in sensitive_cols:
+                X_train_ab = X_train_ab.drop(columns=[col], errors="ignore")
+                X_valid_ab = X_valid_ab.drop(columns=[col], errors="ignore")
+                X_test_ab = X_test_ab.drop(columns=[col], errors="ignore")
+
+        cat_cols = cat_cols_fn(X_train_ab)
+        for col in cat_cols:
+            X_train_ab[col] = X_train_ab[col].fillna("Unknown").astype(str)
+            X_valid_ab[col] = X_valid_ab[col].fillna("Unknown").astype(str)
+            X_test_ab[col] = X_test_ab[col].fillna("Unknown").astype(str)
+
+        model = CatBoostClassifier(
+            iterations=300, depth=6, learning_rate=0.055, l2_leaf_reg=6.0,
+            loss_function="Logloss", eval_metric="PRAUC",
+            scale_pos_weight=scale_pos_weight,
+            random_seed=RANDOM_STATE, verbose=False, allow_writing_files=False,
+        )
+        model.fit(X_train_ab, y_train, cat_features=cat_cols,
+                  eval_set=(X_valid_ab, y_valid), use_best_model=True, early_stopping_rounds=50)
+        v_scores = model.predict_proba(X_valid_ab)[:, 1]
+        t_scores = model.predict_proba(X_test_ab)[:, 1]
+        spec = make_candidate_spec(
+            "CatBoost", "native_cat", feat_set_name,
+            "scale_pos_weight", "logloss", "months_0_5", "none",
+            f"D6 feature ablation with {feat_set_name}.",
+        )
+        add_evaluated_candidate(rows, score_registry, spec, y_valid, y_test,
+                                v_scores, t_scores, valid_prevalence, test_prevalence)
+
+    results = pd.DataFrame(rows)
+    results.to_csv(RESULTS_DIR / "07_feature_ablation_results.csv", index=False)
+
+    full_row = results[results["feature_set"] == "full_advanced"].iloc[0]
+    results["pr_auc_delta_vs_full"] = results["validation_pr_auc"] - float(full_row["validation_pr_auc"])
+    results["top1_delta_vs_full"] = results["validation_precision_top_1pct"] - float(full_row["validation_precision_top_1pct"])
+    results.to_csv(RESULTS_DIR / "07_feature_ablation_results.csv", index=False)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sorted_results = results.sort_values("validation_pr_auc", ascending=True)
+    ax.barh(sorted_results["feature_set"], sorted_results["validation_pr_auc"])
+    ax.set_xlabel("Validation PR-AUC")
+    ax.set_title("D6 Feature Ablation: PR-AUC by Feature Set")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "07_feature_ablation_pr_auc.png", dpi=150)
+    plt.close(fig)
+
+    best = results.sort_values("validation_pr_auc", ascending=False).iloc[0]
+    worst = results.sort_values("validation_pr_auc", ascending=True).iloc[0]
+    decision = f"""# Decision Checkpoint D6 - Feature Ablation
+
+## Checkpoint Name
+
+D6 top five feature ablations
+
+## Purpose
+
+Run individual feature ablations over CatBoost to determine which feature groups
+contribute meaningfully.
+
+## Candidates Evaluated
+
+{markdown_table(results[["feature_set", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct", "pr_auc_delta_vs_full", "top1_delta_vs_full"]].round(6))}
+
+## Key Findings
+
+- Best feature set: `{best["feature_set"]}` (PR-AUC: {best["validation_pr_auc"]:.6f})
+- Worst feature set: `{worst["feature_set"]}` (PR-AUC: {worst["validation_pr_auc"]:.6f})
+- Full advanced PR-AUC: `{full_row["validation_pr_auc"]:.6f}`
+- Removing sensitive columns impact: `{results.loc[results["feature_set"]=="full_advanced_without_sensitive","pr_auc_delta_vs_full"].iloc[0]:.6f}` PR-AUC
+- Removing ratios impact: `{results.loc[results["feature_set"]=="full_advanced_without_ratios","pr_auc_delta_vs_full"].iloc[0]:.6f}` PR-AUC
+- Removing interactions impact: `{results.loc[results["feature_set"]=="full_advanced_without_interactions","pr_auc_delta_vs_full"].iloc[0]:.6f}` PR-AUC
+
+## Decision Made
+
+`promote`
+
+## Reason
+
+Feature ablation identifies which features contribute and which can be safely removed.
+Full advanced or full advanced without sensitive should be promoted as the production
+feature set depending on fairness review in D7.
+
+## Next Step
+
+Run D7 fairness audit for finalists.
+"""
+    (RESULTS_DIR / "decision_checkpoint_D6_feature_ablation_decision.md").write_text(decision, encoding="utf-8")
+    append_run_log("D6 completed")
+    print("D6 completed")
+    print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D6_feature_ablation_decision.md'}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Holistic V2 focused checkpoints.")
     parser.add_argument(
         "--checkpoint",
-        choices=["D0", "D1", "D2", "D3", "D4", "D5"],
+        choices=["D0", "D1", "D2", "D3", "D4", "D5", "D6"],
         help="Checkpoint to run.",
     )
     parser.add_argument(
@@ -2562,15 +2713,16 @@ def main() -> None:
         run_d3()
         run_d4()
         run_d5()
+        run_d6()
         return
     dispatch = {
         "D0": run_d0, "D1": run_d1, "D2": run_d2, "D3": run_d3,
-        "D4": run_d4, "D5": run_d5,
+        "D4": run_d4, "D5": run_d5, "D6": run_d6,
     }
     if args.checkpoint in dispatch:
         dispatch[args.checkpoint]()
         return
-    raise SystemExit("Choose --checkpoint D0..D5, or --run-all.")
+    raise SystemExit("Choose --checkpoint D0..D6, or --run-all.")
 
 
 if __name__ == "__main__":
