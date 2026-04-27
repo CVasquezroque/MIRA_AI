@@ -2689,11 +2689,183 @@ Run D7 fairness audit for finalists.
     print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D6_feature_ablation_decision.md'}")
 
 
+def compute_fairness_groups(
+    y_true: np.ndarray,
+    scores: np.ndarray,
+    threshold: float,
+    group_labels: np.ndarray,
+    group_name: str,
+) -> pd.DataFrame:
+    predictions = (scores >= threshold).astype(int)
+    groups = pd.Series(group_labels)
+    rows = []
+    for label in sorted(groups.unique()):
+        mask = groups == label
+        y_g = y_true[mask]
+        p_g = predictions[mask]
+        if len(y_g) == 0:
+            continue
+        tp = int(((y_g == 1) & (p_g == 1)).sum())
+        fp = int(((y_g == 0) & (p_g == 1)).sum())
+        fn = int(((y_g == 1) & (p_g == 0)).sum())
+        tn = int(((y_g == 0) & (p_g == 0)).sum())
+        positives = tp + fn
+        negatives = fp + tn
+        rows.append({
+            "group_attribute": group_name,
+            "group_value": str(label),
+            "group_size": int(len(y_g)),
+            "fraud_prevalence": float(y_g.mean()),
+            "alert_rate": float(p_g.mean()),
+            "precision": tp / (tp + fp) if (tp + fp) > 0 else np.nan,
+            "fdr": fp / (tp + fp) if (tp + fp) > 0 else np.nan,
+            "tpr_recall": tp / positives if positives > 0 else np.nan,
+            "fpr": fp / negatives if negatives > 0 else np.nan,
+            "fnr": fn / positives if positives > 0 else np.nan,
+            "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+        })
+    df = pd.DataFrame(rows)
+    if not df.empty and len(df) > 1:
+        df["max_fpr_gap"] = df["fpr"].max() - df["fpr"].min()
+        df["max_tpr_gap"] = df["tpr_recall"].max() - df["tpr_recall"].min()
+        ref_tpr = df["tpr_recall"].iloc[0]
+        df["equal_opportunity_diff"] = df["tpr_recall"] - ref_tpr
+        alert_rates = df["alert_rate"]
+        min_ar = alert_rates.min()
+        max_ar = alert_rates.max()
+        df["dir_alert"] = min_ar / max_ar if max_ar > 0 else np.nan
+        non_alert = 1 - alert_rates
+        min_na = non_alert.min()
+        max_na = non_alert.max()
+        df["dir_non_alert"] = min_na / max_na if max_na > 0 else np.nan
+    return df
+
+
+def run_d7() -> None:
+    ensure_output_dirs()
+    append_run_log("D7 started")
+    from advanced_feature_modeling import (
+        AdvancedFeatureBuilder,
+        catboost_scores,
+        categorical_columns as cat_cols_fn,
+        fit_catboost,
+    )
+
+    metadata = load_d0_metadata()
+    data = load_data()
+    splits = chronological_split(data)
+    train_sample = stratified_sample_frame(splits.train, D1_TRAIN_MAX_ROWS)
+    drop_cols = feature_drop_columns(metadata.get("leakage_exclusions", []))
+    X_train = make_feature_matrix(train_sample, drop_cols)
+    y_train = train_sample[TARGET].copy()
+    X_valid = make_feature_matrix(splits.valid, drop_cols)
+    y_valid = splits.valid[TARGET].copy()
+    scale_pos_weight = float((len(y_train) - y_train.sum()) / y_train.sum())
+
+    # Fit finalist CatBoost
+    append_run_log("D7 fitting finalist CatBoost for fairness")
+    fitted = fit_catboost(X_train, y_train, X_valid, y_valid, scale_pos_weight)
+    valid_scores = catboost_scores(fitted, X_valid)
+    threshold = threshold_at_fpr_limit(y_valid.to_numpy(), valid_scores, max_fpr=0.05)
+
+    valid_raw = splits.valid.copy()
+    y_true = y_valid.to_numpy()
+
+    # Age and income groups
+    if "customer_age" in valid_raw.columns:
+        valid_raw["customer_age_group"] = pd.cut(
+            valid_raw["customer_age"], bins=[0, 25, 35, 45, 55, 100],
+            labels=["<=25", "26-35", "36-45", "46-55", "56+"],
+        ).astype(str)
+    if "income" in valid_raw.columns:
+        valid_raw["income_group"] = pd.qcut(
+            valid_raw["income"], q=4, duplicates="drop",
+        ).astype(str)
+
+    group_cols = ["housing_status", "employment_status", "customer_age_group", "income_group"]
+    all_fairness = []
+    for col in group_cols:
+        if col not in valid_raw.columns:
+            continue
+        labels = valid_raw[col].fillna("Unknown").astype(str).to_numpy()
+        df = compute_fairness_groups(y_true, valid_scores, threshold, labels, col)
+        all_fairness.append(df)
+
+    fairness = pd.concat(all_fairness, ignore_index=True) if all_fairness else pd.DataFrame()
+    fairness.to_csv(RESULTS_DIR / "08_fairness_audit.csv", index=False)
+
+    # Fairness plot
+    if not fairness.empty:
+        for attr in fairness["group_attribute"].unique():
+            subset = fairness[fairness["group_attribute"] == attr]
+            fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+            axes[0].bar(subset["group_value"], subset["fpr"])
+            axes[0].set_title(f"FPR by {attr}")
+            axes[0].tick_params(axis="x", rotation=45)
+            axes[1].bar(subset["group_value"], subset["tpr_recall"])
+            axes[1].set_title(f"TPR by {attr}")
+            axes[1].tick_params(axis="x", rotation=45)
+            axes[2].bar(subset["group_value"], subset["alert_rate"])
+            axes[2].set_title(f"Alert Rate by {attr}")
+            axes[2].tick_params(axis="x", rotation=45)
+            fig.suptitle(f"D7 Fairness: {attr}")
+            fig.tight_layout()
+            fig.savefig(FIGURES_DIR / f"08_fairness_{attr}.png", dpi=150)
+            plt.close(fig)
+
+    # Summary metrics
+    max_fpr_gap = float(fairness["max_fpr_gap"].max()) if not fairness.empty else np.nan
+    max_tpr_gap = float(fairness["max_tpr_gap"].max()) if not fairness.empty else np.nan
+    min_dir = float(fairness["dir_alert"].min()) if not fairness.empty else np.nan
+
+    requires_review = max_fpr_gap > 0.02 or max_tpr_gap > 0.10 or (min_dir < 0.80 if not np.isnan(min_dir) else False)
+    decision_label = "requires fairness review" if requires_review else "promote"
+
+    decision = f"""# Decision Checkpoint D7 - Fairness Audit
+
+## Checkpoint Name
+
+D7 finalist fairness audit
+
+## Purpose
+
+Evaluate group-level fairness metrics for the finalist CatBoost model across
+housing_status, employment_status, age group, and income group.
+
+## Fairness Metrics
+
+{markdown_table(fairness[["group_attribute", "group_value", "group_size", "fraud_prevalence", "alert_rate", "precision", "fdr", "tpr_recall", "fpr"]].round(6)) if not fairness.empty else "_No fairness data._"}
+
+## Summary
+
+- Max FPR gap across any attribute: `{max_fpr_gap:.6f}`
+- Max TPR gap across any attribute: `{max_tpr_gap:.6f}`
+- Min Disparate Impact Ratio (alert): `{min_dir:.6f}`
+- Requires further fairness review: `{"yes" if requires_review else "no"}`
+
+## Decision Made
+
+`{decision_label}`
+
+## Reason
+
+{"Significant group-level disparities were found. The model should not be deployed without fairness mitigation." if requires_review else "Group-level disparities are within acceptable thresholds for a controlled pilot."}
+
+## Next Step
+
+Run D8 final strategy report.
+"""
+    (RESULTS_DIR / "decision_checkpoint_D7_fairness_decision.md").write_text(decision, encoding="utf-8")
+    append_run_log("D7 completed")
+    print("D7 completed")
+    print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D7_fairness_decision.md'}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Holistic V2 focused checkpoints.")
     parser.add_argument(
         "--checkpoint",
-        choices=["D0", "D1", "D2", "D3", "D4", "D5", "D6"],
+        choices=["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7"],
         help="Checkpoint to run.",
     )
     parser.add_argument(
@@ -2714,15 +2886,16 @@ def main() -> None:
         run_d4()
         run_d5()
         run_d6()
+        run_d7()
         return
     dispatch = {
         "D0": run_d0, "D1": run_d1, "D2": run_d2, "D3": run_d3,
-        "D4": run_d4, "D5": run_d5, "D6": run_d6,
+        "D4": run_d4, "D5": run_d5, "D6": run_d6, "D7": run_d7,
     }
     if args.checkpoint in dispatch:
         dispatch[args.checkpoint]()
         return
-    raise SystemExit("Choose --checkpoint D0..D6, or --run-all.")
+    raise SystemExit("Choose --checkpoint D0..D7, or --run-all.")
 
 
 if __name__ == "__main__":

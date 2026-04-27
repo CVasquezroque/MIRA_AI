@@ -70,3 +70,6 @@
 - 2026-04-27T00:21:43 | D6 ablation full_advanced_without_interactions CatBoost
 - 2026-04-27T00:22:40 | D6 ablation full_advanced_without_sensitive CatBoost
 - 2026-04-27T00:23:51 | D6 completed
+- 2026-04-27T00:25:07 | D7 started
+- 2026-04-27T00:25:11 | D7 fitting finalist CatBoost for fairness
+- 2026-04-27T00:26:16 | D7 completed
