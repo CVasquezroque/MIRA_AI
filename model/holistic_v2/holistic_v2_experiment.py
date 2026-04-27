@@ -2138,11 +2138,257 @@ def run_d3() -> None:
     print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D3_temporal_blend_decision.md'}")
 
 
+def hard_negative_sample_weights(
+    y_train: pd.Series,
+    train_scores: np.ndarray,
+    strategy: str,
+    fp_weight_multiplier: float = 3.0,
+) -> np.ndarray:
+    """Compute per-sample training weights for hard negative mining."""
+    weights = np.ones(len(y_train), dtype=float)
+    if strategy == "score_band":
+        threshold_50 = float(np.percentile(train_scores, 95))
+        threshold_90 = float(np.percentile(train_scores, 99))
+        is_negative = y_train.to_numpy() == 0
+        in_band = is_negative & (train_scores >= threshold_50) & (train_scores <= threshold_90)
+        weights[in_band] = fp_weight_multiplier
+    elif strategy == "rank_band":
+        ranks = pd.Series(train_scores).rank(pct=True).to_numpy()
+        is_negative = y_train.to_numpy() == 0
+        in_band = is_negative & (ranks >= 0.90) & (ranks <= 0.99)
+        weights[in_band] = fp_weight_multiplier
+    return weights
+
+
+def run_d4() -> None:
+    ensure_output_dirs()
+    append_run_log("D4 started")
+    from advanced_feature_modeling import (
+        catboost_scores,
+        fit_catboost,
+        make_target_frequency_pipeline,
+        make_xgboost,
+        model_scores,
+    )
+    from catboost import CatBoostClassifier
+
+    metadata = load_d0_metadata()
+    data = load_data()
+    splits = chronological_split(data)
+    train_sample = stratified_sample_frame(splits.train, D1_TRAIN_MAX_ROWS)
+    drop_cols = feature_drop_columns(metadata.get("leakage_exclusions", []))
+    X_train = make_feature_matrix(train_sample, drop_cols)
+    y_train = train_sample[TARGET].copy()
+    X_valid = make_feature_matrix(splits.valid, drop_cols)
+    y_valid = splits.valid[TARGET].copy()
+    X_test = make_feature_matrix(splits.test, drop_cols)
+    y_test = splits.test[TARGET].copy()
+    valid_prevalence = float(y_valid.mean())
+    test_prevalence = float(y_test.mean())
+    scale_pos_weight = float((len(y_train) - y_train.sum()) / y_train.sum())
+
+    rows: list[dict] = []
+    score_registry: dict[str, dict[str, np.ndarray]] = {}
+
+    # --- Baseline CatBoost (no hard negative) ---
+    append_run_log("D4 fitting baseline CatBoost")
+    baseline_fitted = fit_catboost(X_train, y_train, X_valid, y_valid, scale_pos_weight)
+    baseline_valid = catboost_scores(baseline_fitted, X_valid)
+    baseline_test = catboost_scores(baseline_fitted, X_test)
+    spec_baseline = make_candidate_spec(
+        "CatBoost", "native_cat", "original_plus_basic_generated",
+        "scale_pos_weight", "logloss", "months_0_5", "none",
+        "D4 baseline CatBoost for hard negative comparison.",
+    )
+    add_evaluated_candidate(
+        rows, score_registry, spec_baseline,
+        y_valid, y_test, baseline_valid, baseline_test,
+        valid_prevalence, test_prevalence,
+    )
+
+    # --- C1: Score-band hard negative weighting ---
+    append_run_log("D4 fitting C1 score-band hard negative CatBoost")
+    from advanced_feature_modeling import AdvancedFeatureBuilder, categorical_columns as cat_cols_fn
+    builder = AdvancedFeatureBuilder()
+    X_train_cb = builder.fit_transform(X_train, y_train).drop(columns=["month"], errors="ignore")
+    X_valid_cb = builder.transform(X_valid).drop(columns=["month"], errors="ignore")
+    X_test_cb = builder.transform(X_test).drop(columns=["month"], errors="ignore")
+    cat_cols = cat_cols_fn(X_train_cb)
+    for col in cat_cols:
+        X_train_cb[col] = X_train_cb[col].fillna("Unknown").astype(str)
+        X_valid_cb[col] = X_valid_cb[col].fillna("Unknown").astype(str)
+        X_test_cb[col] = X_test_cb[col].fillna("Unknown").astype(str)
+
+    # First pass: get scores on training data
+    pass1 = CatBoostClassifier(
+        iterations=200, depth=6, learning_rate=0.055, l2_leaf_reg=6.0,
+        loss_function="Logloss", eval_metric="PRAUC",
+        scale_pos_weight=scale_pos_weight,
+        random_seed=RANDOM_STATE, verbose=False, allow_writing_files=False,
+    )
+    pass1.fit(X_train_cb, y_train, cat_features=cat_cols,
+              eval_set=(X_valid_cb, y_valid), use_best_model=True, early_stopping_rounds=40)
+    train_scores_pass1 = pass1.predict_proba(X_train_cb)[:, 1]
+
+    for strategy, multiplier, label in [
+        ("score_band", 3.0, "C1_score_band_3x"),
+        ("score_band", 5.0, "C1_score_band_5x"),
+        ("rank_band", 3.0, "C1_rank_band_3x"),
+    ]:
+        weights = hard_negative_sample_weights(y_train, train_scores_pass1, strategy, multiplier)
+        pool_train = __import__("catboost").Pool(X_train_cb, y_train, cat_features=cat_cols, weight=weights)
+        pool_valid = __import__("catboost").Pool(X_valid_cb, y_valid, cat_features=cat_cols)
+        hn_model = CatBoostClassifier(
+            iterations=350, depth=6, learning_rate=0.055, l2_leaf_reg=6.0,
+            loss_function="Logloss", eval_metric="PRAUC",
+            scale_pos_weight=scale_pos_weight,
+            random_seed=RANDOM_STATE, verbose=False, allow_writing_files=False,
+        )
+        hn_model.fit(pool_train, eval_set=pool_valid, use_best_model=True, early_stopping_rounds=50)
+        hn_valid = hn_model.predict_proba(X_valid_cb)[:, 1]
+        hn_test = hn_model.predict_proba(X_test_cb)[:, 1]
+        spec = make_candidate_spec(
+            "HardNegativeCatBoost", "native_cat", "original_plus_basic_generated",
+            "hard_negative_weighting", "logloss", "months_0_5", label,
+            f"Two-pass CatBoost with {strategy} hard negative weighting (multiplier={multiplier}).",
+        )
+        add_evaluated_candidate(
+            rows, score_registry, spec,
+            y_valid, y_test, hn_valid, hn_test,
+            valid_prevalence, test_prevalence,
+        )
+
+    # --- C2: Two-stage alert filter ---
+    append_run_log("D4 fitting C2 two-stage alert filter")
+    alert_mask_valid = baseline_valid >= np.percentile(baseline_valid, 90)
+    alert_mask_test = baseline_test >= np.percentile(baseline_test, 90)
+    alert_mask_train = train_scores_pass1 >= np.percentile(train_scores_pass1, 90)
+    if alert_mask_train.sum() > 50:
+        stage2 = CatBoostClassifier(
+            iterations=200, depth=4, learning_rate=0.04, l2_leaf_reg=8.0,
+            loss_function="Logloss", eval_metric="PRAUC",
+            random_seed=RANDOM_STATE, verbose=False, allow_writing_files=False,
+        )
+        stage2.fit(
+            X_train_cb[alert_mask_train], y_train[alert_mask_train],
+            cat_features=cat_cols,
+        )
+        stage2_valid_scores = np.zeros(len(y_valid))
+        stage2_valid_scores[~alert_mask_valid] = baseline_valid[~alert_mask_valid] * 0.5
+        stage2_valid_scores[alert_mask_valid] = stage2.predict_proba(X_valid_cb[alert_mask_valid])[:, 1]
+        stage2_test_scores = np.zeros(len(y_test))
+        stage2_test_scores[~alert_mask_test] = baseline_test[~alert_mask_test] * 0.5
+        stage2_test_scores[alert_mask_test] = stage2.predict_proba(X_test_cb[alert_mask_test])[:, 1]
+        spec_s2 = make_candidate_spec(
+            "HardNegativeCatBoost", "native_cat", "original_plus_basic_generated",
+            "two_stage_filter", "logloss", "months_0_5", "C2_two_stage_alert_filter",
+            "Two-stage: CatBoost stage 1 filters top-10% alerts, stage 2 re-scores them.",
+        )
+        add_evaluated_candidate(
+            rows, score_registry, spec_s2,
+            y_valid, y_test, stage2_valid_scores, stage2_test_scores,
+            valid_prevalence, test_prevalence,
+        )
+
+    # --- C3: Threshold-only baseline (just raise threshold) ---
+    for fpr_limit in [0.03, 0.02, 0.01]:
+        thr = threshold_at_fpr_limit(y_valid.to_numpy(), baseline_valid, max_fpr=fpr_limit)
+        spec_thr = make_candidate_spec(
+            "CatBoost", "native_cat", "original_plus_basic_generated",
+            "scale_pos_weight", "logloss", "months_0_5", "none",
+            f"C3 threshold-only at FPR<={fpr_limit}. Threshold={thr:.6f}.",
+        )
+        row = dict(spec_thr)
+        row["selected_threshold_fpr5"] = thr
+        row.update(evaluate_split(y_valid, baseline_valid, thr, valid_prevalence, "validation"))
+        row.update(evaluate_split(y_test, baseline_test, thr, test_prevalence, "test"))
+        rows.append(row)
+
+    results = pd.DataFrame(rows)
+    results.to_csv(RESULTS_DIR / "05_hard_negative_results.csv", index=False)
+
+    # Decision
+    baseline_row = results[results["model_id"] == spec_baseline["model_id"]].iloc[0]
+    hn_rows = results[results["model_family"] == "HardNegativeCatBoost"]
+    best_hn = hn_rows.sort_values(
+        ["validation_fdr_at_fpr5", "validation_pr_auc"],
+        ascending=[True, False],
+    ).iloc[0] if not hn_rows.empty else baseline_row
+    fdr_delta = float(best_hn["validation_fdr_at_fpr5"] - baseline_row["validation_fdr_at_fpr5"])
+    pr_delta = float(best_hn["validation_pr_auc"] - baseline_row["validation_pr_auc"])
+    recall_delta = float(best_hn["validation_recall_at_fpr5"] - baseline_row["validation_recall_at_fpr5"])
+    promote = fdr_delta < -0.005 and pr_delta > -0.003
+    decision_label = "promote" if promote else "keep as benchmark"
+    reason = (
+        "Hard negative mining reduced FDR enough to justify carrying it forward."
+        if promote
+        else "Hard negative mining did not materially reduce FDR without hurting other metrics."
+    )
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.scatter(results["validation_recall_at_fpr5"], results["validation_fdr_at_fpr5"], s=90)
+    for _, r in results.iterrows():
+        ax.annotate(str(r.get("ensemble_type", ""))[:25], (r["validation_recall_at_fpr5"], r["validation_fdr_at_fpr5"]), fontsize=7)
+    ax.set_xlabel("Recall at FPR<=5%")
+    ax.set_ylabel("FDR at FPR<=5%")
+    ax.set_title("D4 Hard Negative Mining: Recall vs FDR")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "05_hard_negative_recall_vs_fdr.png", dpi=150)
+    plt.close(fig)
+
+    decision = f"""# Decision Checkpoint D4 - Hard Negative Mining
+
+## Checkpoint Name
+
+D4 hard negative mining
+
+## Purpose
+
+Evaluate whether hard negative mining can materially reduce false positives / FDR
+while preserving useful recall and alert volume.
+
+## Candidates Or Options Evaluated
+
+{markdown_table(results[["readable_model_name", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct"]].round(6))}
+
+## Validation Metrics Used
+
+- validation FDR at FPR <= 5%;
+- validation PR-AUC;
+- validation recall at FPR <= 5%;
+- validation Precision@Top 1%.
+
+## Decision Made
+
+`{decision_label}`
+
+## Best Hard Negative Candidate
+
+`{best_hn["readable_model_name"]}`
+
+- FDR delta vs baseline: `{fdr_delta:.6f}`
+- PR-AUC delta vs baseline: `{pr_delta:.6f}`
+- Recall delta vs baseline: `{recall_delta:.6f}`
+
+## Reason For The Decision
+
+{reason}
+
+## Next Step
+
+Run D5 tuned focal-loss XGBoost.
+"""
+    (RESULTS_DIR / "decision_checkpoint_D4_hard_negative_decision.md").write_text(decision, encoding="utf-8")
+    append_run_log("D4 completed")
+    print("D4 completed")
+    print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D4_hard_negative_decision.md'}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Holistic V2 focused checkpoints.")
     parser.add_argument(
         "--checkpoint",
-        choices=["D0", "D1", "D2", "D3"],
+        choices=["D0", "D1", "D2", "D3", "D4"],
         help="Checkpoint to run. More checkpoints are added as separate commits.",
     )
     parser.add_argument(
@@ -2160,6 +2406,7 @@ def main() -> None:
         run_d1()
         run_d2()
         run_d3()
+        run_d4()
         return
     if args.checkpoint == "D0":
         run_d0()
@@ -2173,7 +2420,10 @@ def main() -> None:
     if args.checkpoint == "D3":
         run_d3()
         return
-    raise SystemExit("Choose --checkpoint D0, --checkpoint D1, --checkpoint D2, --checkpoint D3, or --run-all.")
+    if args.checkpoint == "D4":
+        run_d4()
+        return
+    raise SystemExit("Choose --checkpoint D0..D4, or --run-all.")
 
 
 if __name__ == "__main__":

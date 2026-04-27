@@ -32,3 +32,8 @@
 - 2026-04-26T14:39:35 | D3 fitting lightgbm_no_balance train=[0, 1, 2, 3, 4] holdout=5
 - 2026-04-26T14:39:40 | D3 fitting logistic_balanced train=[0, 1, 2, 3, 4] holdout=5
 - 2026-04-26T14:39:56 | D3 completed
+- 2026-04-27T00:00:41 | D4 started
+- 2026-04-27T00:00:45 | D4 fitting baseline CatBoost
+- 2026-04-27T00:01:50 | D4 fitting C1 score-band hard negative CatBoost
+- 2026-04-27T00:05:25 | D4 fitting C2 two-stage alert filter
+- 2026-04-27T00:05:45 | D4 completed
