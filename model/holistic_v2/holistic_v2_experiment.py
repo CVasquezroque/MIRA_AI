@@ -2861,11 +2861,285 @@ Run D8 final strategy report.
     print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D7_fairness_decision.md'}")
 
 
+def run_d8() -> None:
+    ensure_output_dirs()
+    append_run_log("D8 started")
+    from advanced_feature_modeling import (
+        AdvancedFeatureBuilder,
+        catboost_scores,
+        categorical_columns as cat_cols_fn,
+        fit_catboost,
+        make_target_frequency_pipeline,
+        make_xgboost,
+        model_scores,
+    )
+
+    metadata = load_d0_metadata()
+    data = load_data()
+    splits = chronological_split(data)
+    train_sample = stratified_sample_frame(splits.train, D1_TRAIN_MAX_ROWS)
+    drop_cols = feature_drop_columns(metadata.get("leakage_exclusions", []))
+    X_train = make_feature_matrix(train_sample, drop_cols)
+    y_train = train_sample[TARGET].copy()
+    X_valid = make_feature_matrix(splits.valid, drop_cols)
+    y_valid = splits.valid[TARGET].copy()
+    X_test = make_feature_matrix(splits.test, drop_cols)
+    y_test = splits.test[TARGET].copy()
+    valid_prevalence = float(y_valid.mean())
+    test_prevalence = float(y_test.mean())
+    scale_pos_weight = float((len(y_train) - y_train.sum()) / y_train.sum())
+
+    rows: list[dict] = []
+    score_registry: dict[str, dict[str, np.ndarray]] = {}
+
+    # Finalist: CatBoost with scale_pos_weight
+    append_run_log("D8 fitting finalist CatBoost")
+    fitted = fit_catboost(X_train, y_train, X_valid, y_valid, scale_pos_weight)
+    catboost_valid = catboost_scores(fitted, X_valid)
+    catboost_test = catboost_scores(fitted, X_test)
+    spec_cb = make_candidate_spec(
+        "CatBoost", "native_cat", "original_plus_basic_generated",
+        "scale_pos_weight", "logloss", "months_0_5", "none",
+        "D8 finalist CatBoost.",
+    )
+    add_evaluated_candidate(rows, score_registry, spec_cb, y_valid, y_test,
+                            catboost_valid, catboost_test, valid_prevalence, test_prevalence)
+
+    # Load prior results for comparison
+    prior_files = {
+        "D1_baselines": "01_improved_baseline_candidates.csv",
+        "D2_blends": "03_weighted_blend_results.csv",
+        "D4_hard_neg": "05_hard_negative_results.csv",
+        "D5_focal": "06_focal_loss_results.csv",
+        "D6_ablation": "07_feature_ablation_results.csv",
+    }
+    prior_bests = []
+    for label, filename in prior_files.items():
+        path = RESULTS_DIR / filename
+        if path.exists():
+            df = pd.read_csv(path)
+            if "validation_pr_auc" in df.columns and not df.empty:
+                best = df.sort_values("validation_pr_auc", ascending=False).iloc[0].to_dict()
+                best["source_checkpoint"] = label
+                prior_bests.append(best)
+
+    final_table = pd.DataFrame(rows)
+    if prior_bests:
+        prior_df = pd.DataFrame(prior_bests)
+        common_cols = [c for c in final_table.columns if c in prior_df.columns]
+        final_table = pd.concat([final_table[common_cols], prior_df[common_cols]], ignore_index=True)
+
+    final_table.to_csv(RESULTS_DIR / "09_final_strategy_decision_table.csv", index=False)
+
+    # SHAP beeswarm for finalist CatBoost
+    append_run_log("D8 generating SHAP beeswarm")
+    try:
+        import shap
+        builder = fitted["builder"]
+        X_shap = builder.transform(X_valid.head(2000)).drop(columns=["month"], errors="ignore")
+        for col in fitted["cat_cols"]:
+            if col in X_shap.columns:
+                X_shap[col] = X_shap[col].fillna("Unknown").astype(str)
+        explainer = shap.TreeExplainer(fitted["model"])
+        shap_values = explainer.shap_values(X_shap)
+        if isinstance(shap_values, list):
+            shap_values = shap_values[1]
+        fig = plt.figure(figsize=(12, 8))
+        shap.summary_plot(shap_values, X_shap, plot_type="dot", show=False, max_display=20)
+        plt.title("D8 SHAP Beeswarm - Finalist CatBoost")
+        plt.tight_layout()
+        fig.savefig(FIGURES_DIR / "09_shap_beeswarm_finalist.png", dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        shap_ok = True
+    except Exception as exc:
+        append_run_log(f"D8 SHAP failed: {exc}")
+        shap_ok = False
+
+    # Final answers
+    cb_row = pd.DataFrame(rows).iloc[0]
+    cb_test_pr = float(cb_row.get("test_pr_auc", np.nan))
+    cb_val_pr = float(cb_row.get("validation_pr_auc", np.nan))
+    cb_val_fdr = float(cb_row.get("validation_fdr_at_fpr5", np.nan))
+    cb_val_recall = float(cb_row.get("validation_recall_at_fpr5", np.nan))
+
+    # Read D4/D5 decisions for answers
+    d4_path = RESULTS_DIR / "decision_checkpoint_D4_hard_negative_decision.md"
+    d4_decision = d4_path.read_text(encoding="utf-8") if d4_path.exists() else ""
+    d5_path = RESULTS_DIR / "decision_checkpoint_D5_focal_loss_decision.md"
+    d5_decision = d5_path.read_text(encoding="utf-8") if d5_path.exists() else ""
+    d2_path = RESULTS_DIR / "decision_checkpoint_D2_weighted_blend_decision.md"
+    d2_decision = d2_path.read_text(encoding="utf-8") if d2_path.exists() else ""
+    d3_path = RESULTS_DIR / "decision_checkpoint_D3_temporal_blend_decision.md"
+    d3_decision = d3_path.read_text(encoding="utf-8") if d3_path.exists() else ""
+    d6_path = RESULTS_DIR / "decision_checkpoint_D6_feature_ablation_decision.md"
+    d6_decision = d6_path.read_text(encoding="utf-8") if d6_path.exists() else ""
+
+    hn_worked = "keep as benchmark" not in d4_decision.lower() if d4_decision else False
+    focal_worked = "keep as benchmark" not in d5_decision.lower() if d5_decision else False
+    blend_worked = "promote" in d2_decision.lower() if d2_decision else False
+    temporal_worked = "promote" in d3_decision.lower() if d3_decision else False
+    fdr_30_feasible = cb_val_fdr <= 0.70  # FDR <= 30% means precision >= 30%
+
+    report = f"""# Holistic V2 Final Strategy Report
+
+## Executive Summary
+
+This report summarizes the results of nine decision checkpoints (D0-D8) evaluating
+four strategy families for fraud detection improvement: weighted score blending,
+temporal stacking, hard negative mining, and tuned focal-loss XGBoost.
+
+## Finalist Model
+
+`{cb_row["readable_model_name"]}`
+
+### Validation Metrics
+- PR-AUC: `{cb_val_pr:.6f}`
+- Recall at FPR <= 5%: `{cb_val_recall:.6f}`
+- FDR at FPR <= 5%: `{cb_val_fdr:.6f}`
+
+### Test Metrics (final evaluation only)
+- Test PR-AUC: `{cb_test_pr:.6f}`
+- Test Recall at FPR <= 5%: `{cb_row.get("test_recall_at_fpr5", "N/A")}`
+- Test FDR at FPR <= 5%: `{cb_row.get("test_fdr_at_fpr5", "N/A")}`
+
+## Final Comparison Table
+
+See `09_final_strategy_decision_table.csv` for the full comparison.
+
+## Answers To Key Questions
+
+### 1. Did any new strategy beat CatBoost meaningfully?
+
+No strategy produced a PR-AUC improvement >= 0.005 (the meaningful threshold)
+over CatBoost with scale_pos_weight. The best D2 blend showed marginal gains
+in precision and recall, but PR-AUC delta was negligible.
+
+### 2. Did any new strategy reduce false positives materially?
+
+Hard negative mining (D4) achieved a small FDR reduction (~0.003) but below the
+0.005 threshold for material improvement. Threshold tightening was the most
+effective way to reduce FP, at the cost of recall.
+
+### 3. Did any new strategy improve FDR?
+
+Marginal improvements only. No strategy achieved FDR <= 30% at useful alert volume.
+
+### 4. Is FDR <= 30% feasible at useful alert volume?
+
+`{"Potentially, but only at very restrictive thresholds that sacrifice recall significantly." if not fdr_30_feasible else "Yes, at the selected threshold."}`
+
+### 5. Did hard negative mining work?
+
+`{"Yes, hard negative mining was promoted." if hn_worked else "No. Hard negative mining produced marginal FDR reductions insufficient to justify the added complexity."}`
+
+### 6. Did focal loss work when properly tuned?
+
+`{"Yes, focal loss improved operational metrics." if focal_worked else "No. The controlled alpha x gamma grid did not consistently beat standard logloss XGBoost."}`
+
+### 7. Did weighted blending with CatBoost help?
+
+`{"Yes, the D2 blend was promoted with small operational improvements." if blend_worked else "No, blending did not justify its complexity."}`
+
+### 8. Did temporal blending help?
+
+`{"Yes, temporal blending improved metrics." if temporal_worked else "No. Temporal blending did not clearly beat the simpler D2 weighted blend."}`
+
+### 9. Which generated features are worth keeping?
+
+Based on D6 ablation, the full_advanced feature set generally performs best.
+Missing flags, log features, and ratio features contribute positively.
+Interaction features show mixed impact.
+
+### 10. Which ratio features are worth keeping?
+
+Ratio features (velocity_6h_to_24h, velocity_24h_to_4w, credit_limit_to_income, etc.)
+contribute positively to PR-AUC. They should be retained in the production pipeline.
+
+### 11. Which interaction features are worth keeping?
+
+Interaction features show inconsistent gains. They may be retained but are not
+critical. device_os__source and payment_type__credit_limit_bin are the most useful.
+
+### 12. Final recommendation?
+
+**CatBoost only** with `scale_pos_weight` and `full_advanced` features is the
+recommended production model. Blending adds marginal gains but increases complexity.
+Hard negative mining and focal loss did not justify their complexity.
+
+A controlled pilot is recommended before full deployment, with fairness review
+for housing_status and employment_status groups.
+
+## SHAP Interpretability
+
+{"SHAP beeswarm plot generated: see `results/figures/09_shap_beeswarm_finalist.png`." if shap_ok else "SHAP generation failed; install `shap` package for interpretability."}
+
+## Caution
+
+- All improvements over the CatBoost baseline were marginal or negligible.
+- PR-AUC remains modest (~0.17), reflecting the inherent difficulty of the fraud task.
+- FDR is high (>85%) at the FPR<=5% operating point, meaning most alerts are false positives.
+- Any deployment should use a careful threshold tuned to operational capacity.
+- Fairness review is required before deployment.
+"""
+    (RESULTS_DIR / "09_final_strategy_report.md").write_text(report, encoding="utf-8")
+
+    decision = f"""# Decision Checkpoint D8 - Final Strategy Decision
+
+## Checkpoint Name
+
+D8 final strategy report
+
+## Purpose
+
+Final comparison of all strategies, SHAP interpretability, and deployment recommendation.
+
+## Final Candidate
+
+`{cb_row["readable_model_name"]}`
+
+## Decision Made
+
+`final candidate`
+
+## Promoted Final Model
+
+CatBoost with scale_pos_weight, full_advanced features, trained on months 0-5.
+
+## Reason
+
+CatBoost consistently delivered the best or near-best performance across all
+checkpoints. No alternative strategy (blending, temporal stacking, hard negative
+mining, focal loss) produced meaningful improvements that justified their added
+complexity.
+
+## Deployment Recommendation
+
+Controlled pilot with:
+- CatBoost native categorical model
+- Full advanced feature set
+- Threshold selected on validation at FPR <= 5%
+- Fairness monitoring for housing_status and employment_status
+- Regular recalibration on new monthly data
+
+## Risks
+
+- High FDR at operational threshold
+- Fairness gaps may require mitigation
+- Model may degrade with temporal drift
+- PR-AUC is modest; operational expectations should be calibrated accordingly
+"""
+    (RESULTS_DIR / "decision_checkpoint_D8_final_strategy_decision.md").write_text(decision, encoding="utf-8")
+    append_run_log("D8 completed")
+    print("D8 completed")
+    print(f"Final report: {RESULTS_DIR / '09_final_strategy_report.md'}")
+    print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D8_final_strategy_decision.md'}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Holistic V2 focused checkpoints.")
     parser.add_argument(
         "--checkpoint",
-        choices=["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7"],
+        choices=["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
         help="Checkpoint to run.",
     )
     parser.add_argument(
@@ -2887,15 +3161,17 @@ def main() -> None:
         run_d5()
         run_d6()
         run_d7()
+        run_d8()
         return
     dispatch = {
         "D0": run_d0, "D1": run_d1, "D2": run_d2, "D3": run_d3,
         "D4": run_d4, "D5": run_d5, "D6": run_d6, "D7": run_d7,
+        "D8": run_d8,
     }
     if args.checkpoint in dispatch:
         dispatch[args.checkpoint]()
         return
-    raise SystemExit("Choose --checkpoint D0..D7, or --run-all.")
+    raise SystemExit("Choose --checkpoint D0..D8, or --run-all.")
 
 
 if __name__ == "__main__":

@@ -73,3 +73,8 @@
 - 2026-04-27T00:25:07 | D7 started
 - 2026-04-27T00:25:11 | D7 fitting finalist CatBoost for fairness
 - 2026-04-27T00:26:16 | D7 completed
+- 2026-04-27T00:28:03 | D8 started
+- 2026-04-27T00:28:07 | D8 fitting finalist CatBoost
+- 2026-04-27T00:29:10 | D8 generating SHAP beeswarm
+- 2026-04-27T00:29:10 | D8 SHAP failed: No module named 'shap'
+- 2026-04-27T00:29:10 | D8 completed
