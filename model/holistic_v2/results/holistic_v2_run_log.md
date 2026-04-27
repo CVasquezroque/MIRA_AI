@@ -15,3 +15,20 @@
 - 2026-04-26T14:21:06 | D1 completed
 - 2026-04-26T14:23:07 | D2 started
 - 2026-04-26T14:30:05 | D2 completed
+- 2026-04-26T14:33:23 | D3 started
+- 2026-04-26T14:33:28 | D3 fitting catboost_no_balance train=[0, 1, 2] holdout=3
+- 2026-04-26T14:34:12 | D3 fitting catboost_scale_pos_weight train=[0, 1, 2] holdout=3
+- 2026-04-26T14:35:02 | D3 fitting xgboost_no_balance train=[0, 1, 2] holdout=3
+- 2026-04-26T14:35:07 | D3 fitting lightgbm_no_balance train=[0, 1, 2] holdout=3
+- 2026-04-26T14:35:12 | D3 fitting logistic_balanced train=[0, 1, 2] holdout=3
+- 2026-04-26T14:35:23 | D3 fitting catboost_no_balance train=[0, 1, 2, 3] holdout=4
+- 2026-04-26T14:36:30 | D3 fitting catboost_scale_pos_weight train=[0, 1, 2, 3] holdout=4
+- 2026-04-26T14:37:19 | D3 fitting xgboost_no_balance train=[0, 1, 2, 3] holdout=4
+- 2026-04-26T14:37:23 | D3 fitting lightgbm_no_balance train=[0, 1, 2, 3] holdout=4
+- 2026-04-26T14:37:29 | D3 fitting logistic_balanced train=[0, 1, 2, 3] holdout=4
+- 2026-04-26T14:37:39 | D3 fitting catboost_no_balance train=[0, 1, 2, 3, 4] holdout=5
+- 2026-04-26T14:38:45 | D3 fitting catboost_scale_pos_weight train=[0, 1, 2, 3, 4] holdout=5
+- 2026-04-26T14:39:30 | D3 fitting xgboost_no_balance train=[0, 1, 2, 3, 4] holdout=5
+- 2026-04-26T14:39:35 | D3 fitting lightgbm_no_balance train=[0, 1, 2, 3, 4] holdout=5
+- 2026-04-26T14:39:40 | D3 fitting logistic_balanced train=[0, 1, 2, 3, 4] holdout=5
+- 2026-04-26T14:39:56 | D3 completed

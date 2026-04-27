@@ -1748,11 +1748,401 @@ def run_d2() -> None:
     print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D2_weighted_blend_decision.md'}")
 
 
+def temporal_base_model_ids(candidates: pd.DataFrame) -> dict[str, str]:
+    definitions = {
+        "catboost_no_balance": ("CatBoost", "none"),
+        "catboost_scale_pos_weight": ("CatBoost", "scale_pos_weight"),
+        "xgboost_no_balance": ("XGBoost", "none"),
+        "lightgbm_no_balance": ("LightGBM", "none"),
+        "logistic_balanced": ("LogisticRegression", "class_weight_balanced"),
+    }
+    ids: dict[str, str] = {}
+    for key, (family, balance) in definitions.items():
+        match = candidates[
+            (candidates["model_family"] == family)
+            & (candidates["balance_policy"] == balance)
+            & (candidates["ensemble_type"] == "none")
+        ]
+        if match.empty:
+            raise ValueError(f"Missing D1 base model for temporal blend: {family} / {balance}")
+        ids[key] = match.iloc[0]["model_id"]
+    return ids
+
+
+def fit_temporal_base_scores(
+    model_key: str,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_holdout: pd.DataFrame,
+    y_holdout: pd.Series,
+) -> np.ndarray:
+    from advanced_feature_modeling import (
+        catboost_scores,
+        fit_catboost,
+        make_lightgbm,
+        make_target_frequency_pipeline,
+        make_xgboost,
+        model_scores,
+    )
+
+    scale_pos_weight = float((len(y_train) - y_train.sum()) / y_train.sum())
+    if model_key == "catboost_no_balance":
+        fitted = fit_catboost(X_train, y_train, X_holdout, y_holdout, 1.0)
+        return catboost_scores(fitted, X_holdout)
+    if model_key == "catboost_scale_pos_weight":
+        fitted = fit_catboost(X_train, y_train, X_holdout, y_holdout, scale_pos_weight)
+        return catboost_scores(fitted, X_holdout)
+    if model_key == "xgboost_no_balance":
+        fitted = make_target_frequency_pipeline(make_xgboost(True, 1.0))
+        fitted.fit(X_train, y_train)
+        return model_scores(fitted, X_holdout)
+    if model_key == "lightgbm_no_balance":
+        fitted = make_target_frequency_pipeline(make_lightgbm(1.0))
+        fitted.fit(X_train, y_train)
+        return model_scores(fitted, X_holdout)
+    if model_key == "logistic_balanced":
+        fitted = make_target_frequency_pipeline(
+            LogisticRegression(
+                C=0.03,
+                class_weight="balanced",
+                max_iter=700,
+                random_state=RANDOM_STATE,
+                solver="lbfgs",
+            ),
+            scale_numeric=True,
+        )
+        fitted.fit(X_train, y_train)
+        return model_scores(fitted, X_holdout)
+    raise ValueError(f"Unknown temporal base model key: {model_key}")
+
+
+def build_temporal_oof_scores() -> pd.DataFrame:
+    metadata = load_d0_metadata()
+    data = load_data()
+    drop_columns = feature_drop_columns(metadata.get("leakage_exclusions", []))
+    folds = [
+        ([0, 1, 2], 3),
+        ([0, 1, 2, 3], 4),
+        ([0, 1, 2, 3, 4], 5),
+    ]
+    model_keys = [
+        "catboost_no_balance",
+        "catboost_scale_pos_weight",
+        "xgboost_no_balance",
+        "lightgbm_no_balance",
+        "logistic_balanced",
+    ]
+    fold_frames = []
+    for train_months, holdout_month in folds:
+        train_frame = data[data[MONTH].isin(train_months)].copy()
+        holdout_frame = data[data[MONTH] == holdout_month].copy()
+        train_frame = stratified_sample_frame(train_frame, D1_TEMPORAL_TRAIN_MAX_ROWS)
+        X_train = make_feature_matrix(train_frame, drop_columns)
+        y_train = train_frame[TARGET].copy()
+        X_holdout = make_feature_matrix(holdout_frame, drop_columns)
+        y_holdout = holdout_frame[TARGET].copy()
+        fold_output = pd.DataFrame(
+            {
+                "source_index": holdout_frame.index.to_numpy(),
+                MONTH: holdout_month,
+                TARGET: y_holdout.to_numpy(),
+                "train_months": ",".join(str(month) for month in train_months),
+            }
+        )
+        for model_key in model_keys:
+            append_run_log(f"D3 fitting {model_key} train={train_months} holdout={holdout_month}")
+            fold_output[model_key] = fit_temporal_base_scores(
+                model_key,
+                X_train,
+                y_train,
+                X_holdout,
+                y_holdout,
+            )
+        fold_frames.append(fold_output)
+    return pd.concat(fold_frames, axis=0, ignore_index=True)
+
+
+def add_temporal_blend_candidate(
+    rows: list[dict],
+    score_outputs: dict[str, dict[str, np.ndarray]],
+    y_valid: pd.Series,
+    y_test: pd.Series,
+    valid_scores: np.ndarray,
+    test_scores: np.ndarray,
+    ensemble_type: str,
+    notes: str,
+) -> None:
+    spec = make_candidate_spec(
+        "TemporalBlend",
+        "oof_scores",
+        "mixed",
+        "mixed",
+        "mixed",
+        "temporal_oof",
+        ensemble_type,
+        notes,
+    )
+    add_evaluated_candidate(
+        rows,
+        score_outputs,
+        spec,
+        y_valid,
+        y_test,
+        valid_scores,
+        test_scores,
+        float(y_valid.mean()),
+        float(y_test.mean()),
+    )
+
+
+def plot_d3_figure(results: pd.DataFrame, d2_best: pd.Series | None) -> None:
+    plot_rows = results.copy()
+    if d2_best is not None:
+        plot_rows = pd.concat(
+            [
+                plot_rows,
+                pd.DataFrame(
+                    [
+                        {
+                            "ensemble_type": "D2_best_weighted_blend",
+                            "validation_pr_auc": d2_best["validation_pr_auc"],
+                            "validation_precision_top_1pct": d2_best["validation_precision_top_1pct"],
+                            "validation_fdr_at_fpr5": d2_best["validation_fdr_at_fpr5"],
+                        }
+                    ]
+                ),
+            ],
+            ignore_index=True,
+        )
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.scatter(
+        plot_rows["validation_pr_auc"],
+        plot_rows["validation_precision_top_1pct"],
+        s=100,
+        c=1 - plot_rows["validation_fdr_at_fpr5"],
+        cmap="viridis",
+    )
+    for _, row in plot_rows.iterrows():
+        ax.annotate(str(row["ensemble_type"]).replace("_", "\n")[:30], (row["validation_pr_auc"], row["validation_precision_top_1pct"]), fontsize=8)
+    ax.set_xlabel("Validation PR-AUC")
+    ax.set_ylabel("Validation Precision@Top 1%")
+    ax.set_title("D3 Temporal Blending Comparison")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "04_temporal_blending_comparison.png", dpi=150)
+    plt.close(fig)
+
+
+def write_d3_summary_and_decision(results: pd.DataFrame, oof: pd.DataFrame) -> None:
+    d1_candidates = pd.read_csv(RESULTS_DIR / "01_improved_baseline_candidates.csv")
+    d2_results_path = RESULTS_DIR / "03_weighted_blend_results.csv"
+    d2_best = None
+    if d2_results_path.exists():
+        d2_results = pd.read_csv(d2_results_path)
+        d2_best = d2_results.sort_values(
+            ["validation_precision_top_1pct", "validation_pr_auc"], ascending=False
+        ).iloc[0]
+    best_individual = d1_candidates[d1_candidates["ensemble_type"] == "none"].sort_values(
+        "validation_pr_auc", ascending=False
+    ).iloc[0]
+    best_temporal = results.sort_values(
+        ["validation_precision_top_1pct", "validation_fdr_at_fpr5", "validation_pr_auc"],
+        ascending=[False, True, False],
+    ).iloc[0]
+    comparison = d2_best if d2_best is not None else best_individual
+    top1_delta = float(best_temporal["validation_precision_top_1pct"] - comparison["validation_precision_top_1pct"])
+    fdr_delta = float(best_temporal["validation_fdr_at_fpr5"] - comparison["validation_fdr_at_fpr5"])
+    recall_delta = float(best_temporal["validation_recall_at_fpr5"] - comparison["validation_recall_at_fpr5"])
+    pr_delta = float(best_temporal["validation_pr_auc"] - comparison["validation_pr_auc"])
+    stable_by_fold = oof.groupby(MONTH).apply(
+        lambda frame: average_precision_score(frame[TARGET], frame["temporal_meta_logistic_oof_proxy"]),
+        include_groups=False,
+    )
+    promote = (top1_delta > 0.002 or fdr_delta < -0.002 or recall_delta > 0.01) and pr_delta > -0.002
+    decision_label = "promote" if promote else "keep as benchmark"
+    reason = (
+        "Temporal blending improved a validation operational metric enough to justify carrying it forward."
+        if promote
+        else "Temporal blending is not clearly better than the simpler D2 blend, so complexity is not justified yet."
+    )
+
+    summary = f"""# D3 Temporal Blending Summary
+
+## Best Temporal Candidate
+
+`{best_temporal["readable_model_name"]}`
+
+## Comparison Target
+
+`{comparison["readable_model_name"]}`
+
+## Validation Deltas
+
+- PR-AUC delta: `{pr_delta:.6f}`
+- Precision@Top 1% delta: `{top1_delta:.6f}`
+- FDR delta: `{fdr_delta:.6f}`
+- Recall at FPR <= 5% delta: `{recall_delta:.6f}`
+
+## Fold Stability Proxy
+
+{markdown_table(stable_by_fold.reset_index(name="oof_pr_auc").round(6))}
+
+## Answers
+
+- Does temporal blending beat the best individual model? `{"yes" if best_temporal["validation_pr_auc"] > best_individual["validation_pr_auc"] else "no"}`
+- Does it improve top-K precision? `{"yes" if top1_delta > 0 else "no"}`
+- Does it reduce FDR? `{"yes" if fdr_delta < 0 else "no"}`
+- Is the improvement large enough to justify complexity? `{decision_label}`
+- Does the temporal design avoid leakage? `yes, base OOF scores are generated only from prior months.`
+"""
+    (RESULTS_DIR / "04_temporal_blending_summary.md").write_text(summary, encoding="utf-8")
+
+    decision = f"""# Decision Checkpoint D3 - Temporal Blending
+
+## Checkpoint Name
+
+D3 temporal blending
+
+## Purpose
+
+Evaluate a time-aware ensemble using out-of-time base predictions from forward
+month folds rather than shuffled stacking.
+
+## Candidates Or Options Evaluated
+
+{markdown_table(results[["readable_model_name", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct"]].round(6))}
+
+## Validation Metrics Used
+
+- validation PR-AUC;
+- validation Precision@Top 1%;
+- validation recall at FPR <= 5%;
+- validation FDR and precision at FPR <= 5%;
+- OOF fold stability proxy across months 3, 4, and 5.
+
+## Decision Made
+
+`{decision_label}`
+
+## Promoted Candidates
+
+{markdown_table(results[results["model_id"] == best_temporal["model_id"]][["readable_model_name", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct"]].round(6)) if promote else "_No temporal blend promoted over the simpler D2 blend._"}
+
+## Discarded Candidates
+
+{markdown_table(results[results["model_id"] != best_temporal["model_id"]][["readable_model_name", "validation_pr_auc", "validation_recall_at_fpr5", "validation_precision_at_fpr5", "validation_fdr_at_fpr5", "validation_precision_top_1pct"]].round(6))}
+
+## Skipped Candidates
+
+- `skip for runtime`: larger meta-models and shuffled stacking.
+
+## Reason For The Decision
+
+{reason}
+
+## Risks Or Limitations
+
+- OOF folds are still trained on sampled prior-month data for runtime.
+- Meta-model behavior may drift if month 6 differs materially from months 3-5.
+- Additional operational complexity must be justified by clear top-K, FDR, or recall gains.
+
+## Next Step
+
+Run D4 hard negative mining to attack false positives directly.
+"""
+    (RESULTS_DIR / "decision_checkpoint_D3_temporal_blend_decision.md").write_text(decision, encoding="utf-8")
+    plot_d3_figure(results, d2_best)
+
+
+def run_d3() -> None:
+    ensure_output_dirs()
+    append_run_log("D3 started")
+    candidates, valid_score_frame, test_score_frame, _ = load_d1_score_inputs()
+    base_id_map = temporal_base_model_ids(candidates)
+    oof = build_temporal_oof_scores()
+    model_keys = list(base_id_map.keys())
+    X_oof_scores = oof[model_keys].to_numpy(dtype=float)
+    y_oof = oof[TARGET].astype(int)
+    y_valid = valid_score_frame[TARGET].astype(int)
+    y_test = test_score_frame[TARGET].astype(int)
+    valid_matrix = valid_score_frame[[base_id_map[key] for key in model_keys]].to_numpy(dtype=float)
+    test_matrix = test_score_frame[[base_id_map[key] for key in model_keys]].to_numpy(dtype=float)
+
+    meta = LogisticRegression(
+        C=0.10,
+        class_weight="balanced",
+        max_iter=1000,
+        random_state=RANDOM_STATE,
+        solver="lbfgs",
+    )
+    meta.fit(X_oof_scores, y_oof)
+    oof["temporal_meta_logistic_oof_proxy"] = meta.predict_proba(X_oof_scores)[:, 1]
+    valid_meta = meta.predict_proba(valid_matrix)[:, 1]
+    test_meta = meta.predict_proba(test_matrix)[:, 1]
+
+    oof_ap = np.array(
+        [max(average_precision_score(y_oof, X_oof_scores[:, idx]), 1e-8) for idx in range(len(model_keys))]
+    )
+    oof_weights = oof_ap / oof_ap.sum()
+    valid_weighted = valid_matrix @ oof_weights
+    test_weighted = test_matrix @ oof_weights
+
+    valid_rank = np.column_stack([score_percentile_rank(valid_matrix[:, idx]) for idx in range(valid_matrix.shape[1])])
+    test_rank = np.column_stack([score_percentile_rank(test_matrix[:, idx]) for idx in range(test_matrix.shape[1])])
+    rank_weights = np.repeat(1 / len(model_keys), len(model_keys))
+
+    rows: list[dict] = []
+    score_outputs: dict[str, dict[str, np.ndarray]] = {}
+    add_temporal_blend_candidate(
+        rows,
+        score_outputs,
+        y_valid,
+        y_test,
+        valid_meta,
+        test_meta,
+        "temporal_logistic_meta_model",
+        f"Logistic meta-model trained on OOF months 3-5. Base keys: {model_keys}.",
+    )
+    add_temporal_blend_candidate(
+        rows,
+        score_outputs,
+        y_valid,
+        y_test,
+        valid_weighted,
+        test_weighted,
+        "temporal_oof_pr_auc_weighted_blend",
+        f"Non-negative OOF PR-AUC weighted blend. Base keys: {model_keys}; weights={np.round(oof_weights, 6).tolist()}.",
+    )
+    add_temporal_blend_candidate(
+        rows,
+        score_outputs,
+        y_valid,
+        y_test,
+        valid_rank @ rank_weights,
+        test_rank @ rank_weights,
+        "temporal_uniform_rank_blend",
+        f"Uniform rank blend over final base scores. Base keys: {model_keys}.",
+    )
+
+    oof.to_csv(RESULTS_DIR / "04_temporal_blending_oof_scores.csv", index=False)
+    results = pd.DataFrame(rows)
+    results.to_csv(RESULTS_DIR / "04_temporal_blending_results.csv", index=False)
+    pd.DataFrame(
+        {"row_number": np.arange(len(y_valid)), TARGET: y_valid.to_numpy(), **{k: v["validation"] for k, v in score_outputs.items()}}
+    ).to_csv(RESULTS_DIR / "04_temporal_blending_validation_scores.csv", index=False)
+    pd.DataFrame(
+        {"row_number": np.arange(len(y_test)), TARGET: y_test.to_numpy(), **{k: v["test"] for k, v in score_outputs.items()}}
+    ).to_csv(RESULTS_DIR / "04_temporal_blending_test_scores.csv", index=False)
+    write_d3_summary_and_decision(results, oof)
+    append_run_log("D3 completed")
+    print("D3 completed")
+    print(f"Decision file: {RESULTS_DIR / 'decision_checkpoint_D3_temporal_blend_decision.md'}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Holistic V2 focused checkpoints.")
     parser.add_argument(
         "--checkpoint",
-        choices=["D0", "D1", "D2"],
+        choices=["D0", "D1", "D2", "D3"],
         help="Checkpoint to run. More checkpoints are added as separate commits.",
     )
     parser.add_argument(
@@ -1769,6 +2159,7 @@ def main() -> None:
         run_d0()
         run_d1()
         run_d2()
+        run_d3()
         return
     if args.checkpoint == "D0":
         run_d0()
@@ -1779,7 +2170,10 @@ def main() -> None:
     if args.checkpoint == "D2":
         run_d2()
         return
-    raise SystemExit("Choose --checkpoint D0, --checkpoint D1, --checkpoint D2, or --run-all.")
+    if args.checkpoint == "D3":
+        run_d3()
+        return
+    raise SystemExit("Choose --checkpoint D0, --checkpoint D1, --checkpoint D2, --checkpoint D3, or --run-all.")
 
 
 if __name__ == "__main__":

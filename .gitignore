@@ -21,6 +21,11 @@ model/results/**/anomaly_score_training_snapshot.csv
 model/results/**/*.joblib
 model/results/**/*.pkl
 
+# Holistic V2 large regenerable score files
+model/holistic_v2/results/*_oof_scores.csv
+model/holistic_v2/results/*_validation_scores.csv
+model/holistic_v2/results/*_test_scores.csv
+
 # OS/editor noise
 .DS_Store
 Thumbs.db
