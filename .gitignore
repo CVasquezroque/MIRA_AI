@@ -7,6 +7,10 @@ __pycache__/
 .ipynb_checkpoints/
 .pytest_cache/
 
+# Dashboard frontend artifacts
+dashboard/node_modules/
+dashboard/dist/
+
 # Virtual environments
 .venv/
 venv/
@@ -14,12 +18,17 @@ env/
 
 # Generated heavy or noisy artifacts
 *.log
+deploy-*.zip
 eda/figures/*.png
 model/results/**/figures/*.png
 model/results/**/*.png
 model/results/**/anomaly_score_training_snapshot.csv
 model/results/**/*.joblib
 model/results/**/*.pkl
+
+# Full holistic generated outputs are too large for normal GitHub commits.
+# Keep code in Git; store selected reports externally or force-add small summaries intentionally.
+model/full_holistic/results_full_train*/
 
 # Holistic V2 large regenerable score files
 model/holistic_v2/results/*_oof_scores.csv
