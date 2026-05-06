@@ -1,0 +1,8 @@
+{
+  "imbalance_ensemble_gate | Self-paced Ensemble | validation_selected": "models\\imbalance_ensemble_gate_self_paced_ensemble_validation_selected.joblib",
+  "imbalance_ensemble_gate | Self-paced Ensemble | default": "models\\imbalance_ensemble_gate_self_paced_ensemble_default.joblib",
+  "imbalance_ensemble_gate | EasyEnsemble | validation_selected": "models\\imbalance_ensemble_gate_easyensemble_validation_selected.joblib",
+  "imbalance_ensemble_gate | EasyEnsemble | default": "models\\imbalance_ensemble_gate_easyensemble_default.joblib",
+  "imbalance_ensemble_gate | Balance Cascade | validation_selected": "models\\imbalance_ensemble_gate_balance_cascade_validation_selected.joblib",
+  "imbalance_ensemble_gate | Balance Cascade | default": "models\\imbalance_ensemble_gate_balance_cascade_default.joblib"
+}

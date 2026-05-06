@@ -1,0 +1,8 @@
+{
+  "advanced_gate | CatBoost": "models\\advanced_gate_catboost.joblib",
+  "advanced_gate | XGBoost": "models\\advanced_gate_xgboost.joblib",
+  "advanced_gate | LightGBM": "models\\advanced_gate_lightgbm.joblib",
+  "advanced_gate | Logistic Regression": "models\\advanced_gate_logistic_regression.joblib",
+  "advanced_gate | Random Forest": "models\\advanced_gate_random_forest.joblib",
+  "advanced_gate | Decision Tree": "models\\advanced_gate_decision_tree.joblib"
+}

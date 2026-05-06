@@ -1,0 +1,666 @@
+{
+  "baseline | Logistic Regression": {
+    "type": "baseline_search",
+    "model_family": "Logistic Regression",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | Decision Tree": {
+    "type": "baseline_search",
+    "model_family": "Decision Tree",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | Random Forest": {
+    "type": "baseline_search",
+    "model_family": "Random Forest",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | XGBoost": {
+    "type": "baseline_search",
+    "model_family": "XGBoost",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | LightGBM": {
+    "type": "baseline_search",
+    "model_family": "LightGBM",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | CatBoost": {
+    "type": "baseline_search",
+    "model_family": "CatBoost",
+    "feature_mode": "baseline",
+    "feature_set": "catboost_native_raw_no_generated_features",
+    "catboost_feature_mode": "raw_native_features",
+    "balance_policy": "model_default_weighting"
+  },
+  "balance_gate | XGBoost | class_weight": {
+    "type": "balance_gate",
+    "model_family": "XGBoost",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | XGBoost | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "XGBoost",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | XGBoost | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "XGBoost",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | XGBoost | smote": {
+    "type": "balance_gate",
+    "model_family": "XGBoost",
+    "balance_policy": "smote"
+  },
+  "balance_gate | LightGBM | class_weight": {
+    "type": "balance_gate",
+    "model_family": "LightGBM",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | LightGBM | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "LightGBM",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | LightGBM | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "LightGBM",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | LightGBM | smote": {
+    "type": "balance_gate",
+    "model_family": "LightGBM",
+    "balance_policy": "smote"
+  },
+  "balance_gate | Random Forest | class_weight": {
+    "type": "balance_gate",
+    "model_family": "Random Forest",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | Random Forest | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "Random Forest",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | Random Forest | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "Random Forest",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | Random Forest | smote": {
+    "type": "balance_gate",
+    "model_family": "Random Forest",
+    "balance_policy": "smote"
+  },
+  "balance_gate | Logistic Regression | class_weight": {
+    "type": "balance_gate",
+    "model_family": "Logistic Regression",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | Logistic Regression | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "Logistic Regression",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | Logistic Regression | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "Logistic Regression",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | Logistic Regression | smote": {
+    "type": "balance_gate",
+    "model_family": "Logistic Regression",
+    "balance_policy": "smote"
+  },
+  "balance_gate | Decision Tree | class_weight": {
+    "type": "balance_gate",
+    "model_family": "Decision Tree",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | Decision Tree | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "Decision Tree",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | Decision Tree | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "Decision Tree",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | Decision Tree | smote": {
+    "type": "balance_gate",
+    "model_family": "Decision Tree",
+    "balance_policy": "smote"
+  },
+  "advanced_gate | XGBoost": {
+    "type": "advanced_gate",
+    "model_family": "XGBoost",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | CatBoost": {
+    "type": "advanced_gate",
+    "model_family": "CatBoost",
+    "feature_mode": "advanced",
+    "feature_set": "catboost_native_missing_log_ratio_interactions",
+    "catboost_feature_mode": "advanced_feature_builder",
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | LightGBM": {
+    "type": "advanced_gate",
+    "model_family": "LightGBM",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | Random Forest": {
+    "type": "advanced_gate",
+    "model_family": "Random Forest",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | Logistic Regression": {
+    "type": "advanced_gate",
+    "model_family": "Logistic Regression",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | Decision Tree": {
+    "type": "advanced_gate",
+    "model_family": "Decision Tree",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "anomaly_recency_gate | XGBoost | full_0_5 | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "XGBoost",
+    "train_strategy": "full_0_5",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | LightGBM | full_0_5 | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "LightGBM",
+    "train_strategy": "full_0_5",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | Random Forest | full_0_5 | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Random Forest",
+    "train_strategy": "full_0_5",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | Logistic Regression | full_0_5 | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Logistic Regression",
+    "train_strategy": "full_0_5",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | XGBoost | full_0_5 | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "XGBoost",
+    "train_strategy": "full_0_5",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | LightGBM | full_0_5 | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "LightGBM",
+    "train_strategy": "full_0_5",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | Random Forest | full_0_5 | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Random Forest",
+    "train_strategy": "full_0_5",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | Logistic Regression | full_0_5 | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Logistic Regression",
+    "train_strategy": "full_0_5",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | XGBoost | full_0_5_recency_weighted | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "XGBoost",
+    "train_strategy": "full_0_5_recency_weighted",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | LightGBM | full_0_5_recency_weighted | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "LightGBM",
+    "train_strategy": "full_0_5_recency_weighted",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | Random Forest | full_0_5_recency_weighted | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Random Forest",
+    "train_strategy": "full_0_5_recency_weighted",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | Logistic Regression | full_0_5_recency_weighted | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Logistic Regression",
+    "train_strategy": "full_0_5_recency_weighted",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | XGBoost | full_0_5_recency_weighted | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "XGBoost",
+    "train_strategy": "full_0_5_recency_weighted",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | LightGBM | full_0_5_recency_weighted | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "LightGBM",
+    "train_strategy": "full_0_5_recency_weighted",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | Random Forest | full_0_5_recency_weighted | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Random Forest",
+    "train_strategy": "full_0_5_recency_weighted",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | Logistic Regression | full_0_5_recency_weighted | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Logistic Regression",
+    "train_strategy": "full_0_5_recency_weighted",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | XGBoost | recent_3_5 | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "XGBoost",
+    "train_strategy": "recent_3_5",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | LightGBM | recent_3_5 | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "LightGBM",
+    "train_strategy": "recent_3_5",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | Random Forest | recent_3_5 | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Random Forest",
+    "train_strategy": "recent_3_5",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | Logistic Regression | recent_3_5 | without_anomaly_scores": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Logistic Regression",
+    "train_strategy": "recent_3_5",
+    "use_anomaly": false
+  },
+  "anomaly_recency_gate | XGBoost | recent_3_5 | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "XGBoost",
+    "train_strategy": "recent_3_5",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | LightGBM | recent_3_5 | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "LightGBM",
+    "train_strategy": "recent_3_5",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | Random Forest | recent_3_5 | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Random Forest",
+    "train_strategy": "recent_3_5",
+    "use_anomaly": true
+  },
+  "anomaly_recency_gate | Logistic Regression | recent_3_5 | with_isolation_forest_anomaly_score": {
+    "type": "anomaly_recency_gate",
+    "model_family": "Logistic Regression",
+    "train_strategy": "recent_3_5",
+    "use_anomaly": true
+  },
+  "imbalance_ensemble_gate | EasyEnsemble | default": {
+    "type": "imbalance_ensemble_gate",
+    "method": "EasyEnsemble",
+    "selection": "default",
+    "trial_name": "default",
+    "implementation": "official_imbens",
+    "params": {},
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.11668308310996305,
+    "search_validation_roc_auc": 0.8537636316402042,
+    "final_validation_roc_auc": 0.8537636316402042,
+    "final_test_roc_auc": 0.8586042015192075,
+    "final_test_inverted_roc_auc": 0.14139579848079253,
+    "final_test_score_inversion_suspected": false
+  },
+  "imbalance_ensemble_gate | EasyEnsemble | validation_selected": {
+    "type": "imbalance_ensemble_gate",
+    "method": "EasyEnsemble",
+    "selection": "validation_selected",
+    "trial_name": "search_max_samples_0_5_max_features_0_5",
+    "implementation": "official_imbens",
+    "params": {
+      "max_samples": 0.5,
+      "max_features": 0.5
+    },
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.12852257978147982,
+    "search_validation_roc_auc": 0.8637468293814636,
+    "final_validation_roc_auc": 0.8637468293814636,
+    "final_test_roc_auc": 0.8687931578856979,
+    "final_test_inverted_roc_auc": 0.13120684211430209,
+    "final_test_score_inversion_suspected": false
+  },
+  "imbalance_ensemble_gate | Balance Cascade | default": {
+    "type": "imbalance_ensemble_gate",
+    "method": "Balance Cascade",
+    "selection": "default",
+    "trial_name": "default",
+    "implementation": "official_imbens",
+    "params": {},
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.016103227257384937,
+    "search_validation_roc_auc": 0.45617993862005635,
+    "final_validation_roc_auc": 0.45617993862005635,
+    "final_test_roc_auc": 0.4532983475840685,
+    "final_test_inverted_roc_auc": 0.5467016524159315,
+    "final_test_score_inversion_suspected": true
+  },
+  "imbalance_ensemble_gate | Balance Cascade | validation_selected": {
+    "type": "imbalance_ensemble_gate",
+    "method": "Balance Cascade",
+    "selection": "validation_selected",
+    "trial_name": "search_replacement_false",
+    "implementation": "official_imbens",
+    "params": {
+      "replacement": false
+    },
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.021138888572217584,
+    "search_validation_roc_auc": 0.4595041911941947,
+    "final_validation_roc_auc": 0.4595041911941947,
+    "final_test_roc_auc": 0.47463658313506185,
+    "final_test_inverted_roc_auc": 0.525363416864938,
+    "final_test_score_inversion_suspected": true
+  },
+  "imbalance_ensemble_gate | Self-paced Ensemble | default": {
+    "type": "imbalance_ensemble_gate",
+    "method": "Self-paced Ensemble",
+    "selection": "default",
+    "trial_name": "default",
+    "implementation": "official_imbens",
+    "params": {},
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.15415001306506076,
+    "search_validation_roc_auc": 0.8640104503586958,
+    "final_validation_roc_auc": 0.8640104503586958,
+    "final_test_roc_auc": 0.8687082494266899,
+    "final_test_inverted_roc_auc": 0.13129175057331008,
+    "final_test_score_inversion_suspected": false
+  },
+  "imbalance_ensemble_gate | Self-paced Ensemble | validation_selected": {
+    "type": "imbalance_ensemble_gate",
+    "method": "Self-paced Ensemble",
+    "selection": "validation_selected",
+    "trial_name": "search_k_bins_10",
+    "implementation": "official_imbens",
+    "params": {
+      "k_bins": 10
+    },
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.1559508261613684,
+    "search_validation_roc_auc": 0.8616947275158313,
+    "final_validation_roc_auc": 0.8616947275158313,
+    "final_test_roc_auc": 0.8662543736773649,
+    "final_test_inverted_roc_auc": 0.13374562632263512,
+    "final_test_score_inversion_suspected": false
+  },
+  "hyperparameter_tuned | CatBoost": {
+    "type": "hyperparameter-tuning-gate",
+    "model_family": "CatBoost",
+    "feature_set": "catboost_native_advanced_features",
+    "inner_tuning_train_months": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "inner_tuning_validation_month": 5,
+    "outer_validation_month": 6,
+    "test_month": 7,
+    "objective": "maximize inner validation recall@FPR<=5% with precision@top1%, recall@top1%, PR-AUC, FDR, and fairness guardrails",
+    "guardrails": "FPR<=5% plus max FPR and alert-rate fairness gap <=0.20 on inner validation when feasible",
+    "best_inner_trial": 19,
+    "best_inner_objective_value": 0.5242365104906118,
+    "best_inner_metrics": {
+      "runtime_seconds": 63.366703748703,
+      "inner_pr_auc": 0.17989214602812129,
+      "inner_roc_auc": 0.8875346394618115,
+      "precision_top1pct": 0.2721943048576214,
+      "recall_top1pct": 0.2303330970942594,
+      "fdr_top1pct": 0.7278056951423786,
+      "lift_top1pct": 23.018455732477648,
+      "fp_per_tp_top1pct": 2.6738461538461538,
+      "threshold_fpr5": 0.7159264373961478,
+      "fpr_at_fpr5": 0.04975744623108759,
+      "fdr_at_fpr5": 0.8866555841015566,
+      "recall_at_fpr5": 0.5315379163713678,
+      "precision_at_fpr5": 0.1133444158984434,
+      "guardrail_feasible": true,
+      "inner_housing_status_fpr_gap": 0.1553530605144635,
+      "inner_housing_status_alert_rate_gap": 0.17493558934120287,
+      "inner_customer_age_group_fpr_gap": 0.15026919285294635,
+      "inner_customer_age_group_alert_rate_gap": 0.16954542228085237,
+      "inner_income_group_fpr_gap": 0.04865082494220025,
+      "inner_income_group_alert_rate_gap": 0.0536402069303515,
+      "inner_employment_status_fpr_gap": 0.07873838636550501,
+      "inner_employment_status_alert_rate_gap": 0.09260664212927641,
+      "inner_max_fpr_gap": 0.1553530605144635,
+      "inner_max_alert_rate_gap": 0.17493558934120287
+    },
+    "best_params": {
+      "iterations": 160,
+      "depth": 7,
+      "learning_rate": 0.09114565108321325,
+      "l2_leaf_reg": 6.375531706022276,
+      "random_strength": 1.34818194728658,
+      "bagging_temperature": 1.0902495839307005,
+      "scale_pos_weight": 95.82595146409082
+    }
+  },
+  "hyperparameter_tuned | XGBoost": {
+    "type": "hyperparameter-tuning-gate",
+    "model_family": "XGBoost",
+    "feature_set": "baseline_eda_onehot",
+    "inner_tuning_train_months": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "inner_tuning_validation_month": 5,
+    "outer_validation_month": 6,
+    "test_month": 7,
+    "objective": "maximize inner validation recall@FPR<=5% with precision@top1%, recall@top1%, PR-AUC, FDR, and fairness guardrails",
+    "guardrails": "FPR<=5% plus max FPR and alert-rate fairness gap <=0.20 on inner validation when feasible",
+    "best_inner_trial": 12,
+    "best_inner_objective_value": 0.4994240762002143,
+    "best_inner_metrics": {
+      "runtime_seconds": 14.34042739868164,
+      "inner_pr_auc": 0.19232308007816584,
+      "inner_roc_auc": 0.8963879337707388,
+      "precision_top1pct": 0.2914572864321608,
+      "recall_top1pct": 0.24663359319631467,
+      "fdr_top1pct": 0.7085427135678393,
+      "lift_top1pct": 24.647454138160683,
+      "fp_per_tp_top1pct": 2.4310344827586206,
+      "threshold_fpr5": 0.7981373071670532,
+      "fpr_at_fpr5": 0.049536942804803585,
+      "fdr_at_fpr5": 0.8844639612356148,
+      "recall_at_fpr5": 0.5407512402551382,
+      "precision_at_fpr5": 0.11553603876438522,
+      "guardrail_feasible": false,
+      "inner_housing_status_fpr_gap": 0.20793146182445174,
+      "inner_housing_status_alert_rate_gap": 0.22969202149648615,
+      "inner_customer_age_group_fpr_gap": 0.1439946222708254,
+      "inner_customer_age_group_alert_rate_gap": 0.16266428290345245,
+      "inner_income_group_fpr_gap": 0.04129874777814939,
+      "inner_income_group_alert_rate_gap": 0.04639398915312086,
+      "inner_employment_status_fpr_gap": 0.10641436743131658,
+      "inner_employment_status_alert_rate_gap": 0.12017725730786716,
+      "inner_max_fpr_gap": 0.20793146182445174,
+      "inner_max_alert_rate_gap": 0.22969202149648615
+    },
+    "best_params": {
+      "n_estimators": 420,
+      "max_depth": 3,
+      "learning_rate": 0.1222582474879162,
+      "subsample": 0.9990345553110223,
+      "colsample_bytree": 0.81344174234016,
+      "min_child_weight": 9.538933950217324,
+      "gamma": 3.847141280375033,
+      "reg_lambda": 1.2650668719076885,
+      "scale_pos_weight": 146.2227224103684
+    }
+  },
+  "hyperparameter_tuned | LightGBM": {
+    "type": "hyperparameter-tuning-gate",
+    "model_family": "LightGBM",
+    "feature_set": "baseline_eda_onehot",
+    "inner_tuning_train_months": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "inner_tuning_validation_month": 5,
+    "outer_validation_month": 6,
+    "test_month": 7,
+    "objective": "maximize inner validation recall@FPR<=5% with precision@top1%, recall@top1%, PR-AUC, FDR, and fairness guardrails",
+    "guardrails": "FPR<=5% plus max FPR and alert-rate fairness gap <=0.20 on inner validation when feasible",
+    "best_inner_trial": 8,
+    "best_inner_objective_value": 0.49443596833082365,
+    "best_inner_metrics": {
+      "runtime_seconds": 11.640461683273315,
+      "inner_pr_auc": 0.16413685989707558,
+      "inner_roc_auc": 0.8763234172547038,
+      "precision_top1pct": 0.25963149078726966,
+      "recall_top1pct": 0.21970233876683204,
+      "fdr_top1pct": 0.7403685092127303,
+      "lift_top1pct": 21.956065467901755,
+      "fp_per_tp_top1pct": 2.8516129032258064,
+      "threshold_fpr5": 0.8555448032158773,
+      "fpr_at_fpr5": 0.04961327091390189,
+      "fdr_at_fpr5": 0.8912248628884827,
+      "recall_at_fpr5": 0.5060240963855421,
+      "precision_at_fpr5": 0.10877513711151737,
+      "guardrail_feasible": true,
+      "inner_housing_status_fpr_gap": 0.17786023589904254,
+      "inner_housing_status_alert_rate_gap": 0.1985234948441184,
+      "inner_customer_age_group_fpr_gap": 0.13208534713060538,
+      "inner_customer_age_group_alert_rate_gap": 0.15070192467025686,
+      "inner_income_group_fpr_gap": 0.0384277279703463,
+      "inner_income_group_alert_rate_gap": 0.043207212680790676,
+      "inner_employment_status_fpr_gap": 0.0978569834502038,
+      "inner_employment_status_alert_rate_gap": 0.11026147760576545,
+      "inner_max_fpr_gap": 0.17786023589904254,
+      "inner_max_alert_rate_gap": 0.1985234948441184
+    },
+    "best_params": {
+      "n_estimators": 100,
+      "learning_rate": 0.0977630743974025,
+      "max_depth": 8,
+      "num_leaves": 50,
+      "min_child_samples": 260,
+      "subsample": 0.7222133955202271,
+      "colsample_bytree": 0.7433862914177091,
+      "reg_lambda": 0.17414570810812344,
+      "scale_pos_weight": 178.1144634103688
+    }
+  },
+  "hyperparameter_tuned | Logistic Regression": {
+    "type": "hyperparameter-tuning-gate",
+    "model_family": "Logistic Regression",
+    "feature_set": "baseline_eda_onehot",
+    "inner_tuning_train_months": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "inner_tuning_validation_month": 5,
+    "outer_validation_month": 6,
+    "test_month": 7,
+    "objective": "maximize inner validation recall@FPR<=5% with precision@top1%, recall@top1%, PR-AUC, FDR, and fairness guardrails",
+    "guardrails": "FPR<=5% plus max FPR and alert-rate fairness gap <=0.20 on inner validation when feasible",
+    "best_inner_trial": 6,
+    "best_inner_objective_value": 0.43995031991312217,
+    "best_inner_metrics": {
+      "runtime_seconds": 29.966962337493896,
+      "inner_pr_auc": 0.1560464085840954,
+      "inner_roc_auc": 0.8780637510350786,
+      "precision_top1pct": 0.24958123953098826,
+      "recall_top1pct": 0.21119773210489015,
+      "fdr_top1pct": 0.7504187604690118,
+      "lift_top1pct": 21.106153256241043,
+      "fp_per_tp_top1pct": 3.0067114093959733,
+      "threshold_fpr5": 0.023804254347978643,
+      "fpr_at_fpr5": 0.049146821358301104,
+      "fdr_at_fpr5": 0.8924996149699677,
+      "recall_at_fpr5": 0.49468462083628634,
+      "precision_at_fpr5": 0.10750038503003234,
+      "guardrail_feasible": false,
+      "inner_housing_status_fpr_gap": 0.2329328088797888,
+      "inner_housing_status_alert_rate_gap": 0.2523253410500207,
+      "inner_customer_age_group_fpr_gap": 0.14212329405444574,
+      "inner_customer_age_group_alert_rate_gap": 0.16084102461691482,
+      "inner_income_group_fpr_gap": 0.0512454849474257,
+      "inner_income_group_alert_rate_gap": 0.05621594740018189,
+      "inner_employment_status_fpr_gap": 0.11102458390593983,
+      "inner_employment_status_alert_rate_gap": 0.12519569365708222,
+      "inner_max_fpr_gap": 0.2329328088797888,
+      "inner_max_alert_rate_gap": 0.2523253410500207
+    },
+    "best_params": {
+      "C": 0.06651458041089256,
+      "class_weight": null
+    }
+  }
+}

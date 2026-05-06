@@ -1,0 +1,50 @@
+{
+  "advanced_gate | XGBoost": {
+    "type": "advanced_gate",
+    "model_family": "XGBoost",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | CatBoost": {
+    "type": "advanced_gate",
+    "model_family": "CatBoost",
+    "feature_mode": "advanced",
+    "feature_set": "catboost_native_missing_log_ratio_interactions",
+    "catboost_feature_mode": "advanced_feature_builder",
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | LightGBM": {
+    "type": "advanced_gate",
+    "model_family": "LightGBM",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | Random Forest": {
+    "type": "advanced_gate",
+    "model_family": "Random Forest",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | Logistic Regression": {
+    "type": "advanced_gate",
+    "model_family": "Logistic Regression",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "advanced_gate | Decision Tree": {
+    "type": "advanced_gate",
+    "model_family": "Decision Tree",
+    "feature_mode": "advanced",
+    "feature_set": "ratios_interactions_target_frequency",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  }
+}

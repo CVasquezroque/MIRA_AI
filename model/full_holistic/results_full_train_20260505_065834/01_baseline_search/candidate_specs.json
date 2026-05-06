@@ -1,0 +1,50 @@
+{
+  "baseline | Logistic Regression": {
+    "type": "baseline_search",
+    "model_family": "Logistic Regression",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | Decision Tree": {
+    "type": "baseline_search",
+    "model_family": "Decision Tree",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | Random Forest": {
+    "type": "baseline_search",
+    "model_family": "Random Forest",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | XGBoost": {
+    "type": "baseline_search",
+    "model_family": "XGBoost",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | LightGBM": {
+    "type": "baseline_search",
+    "model_family": "LightGBM",
+    "feature_mode": "baseline",
+    "feature_set": "baseline_eda_onehot",
+    "catboost_feature_mode": null,
+    "balance_policy": "model_default_weighting"
+  },
+  "baseline | CatBoost": {
+    "type": "baseline_search",
+    "model_family": "CatBoost",
+    "feature_mode": "baseline",
+    "feature_set": "catboost_native_raw_no_generated_features",
+    "catboost_feature_mode": "raw_native_features",
+    "balance_policy": "model_default_weighting"
+  }
+}

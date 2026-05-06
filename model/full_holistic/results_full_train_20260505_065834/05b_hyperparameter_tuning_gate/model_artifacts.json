@@ -1,0 +1,6 @@
+{
+  "hyperparameter_tuned | XGBoost": "models\\hyperparameter_tuned_xgboost.joblib",
+  "hyperparameter_tuned | CatBoost": "models\\hyperparameter_tuned_catboost.joblib",
+  "hyperparameter_tuned | LightGBM": "models\\hyperparameter_tuned_lightgbm.joblib",
+  "hyperparameter_tuned | Logistic Regression": "models\\hyperparameter_tuned_logistic_regression.joblib"
+}

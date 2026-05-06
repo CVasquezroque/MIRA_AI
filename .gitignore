@@ -26,9 +26,18 @@ model/results/**/anomaly_score_training_snapshot.csv
 model/results/**/*.joblib
 model/results/**/*.pkl
 
-# Full holistic generated outputs are too large for normal GitHub commits.
-# Keep code in Git; store selected reports externally or force-add small summaries intentionally.
-model/full_holistic/results_full_train*/
+# Full holistic generated outputs can be very large.
+# Keep stage folders, reports, summary CSV/JSON, and figures visible, but keep
+# regenerable score/model binaries out of normal GitHub commits.
+model/full_holistic/results_full_train*/**/*scores*.csv
+model/full_holistic/results_full_train*/**/candidate_scores.csv
+model/full_holistic/results_full_train*/**/validation_scores.csv
+model/full_holistic/results_full_train*/**/test_scores.csv
+model/full_holistic/results_full_train*/**/*.joblib
+model/full_holistic/results_full_train*/**/*.pkl
+model/full_holistic/results_full_train*/**/*.pickle
+model/full_holistic/results_full_train*/**/*.cbm
+model/full_holistic/results_full_train*/**/*.model
 
 # Holistic V2 large regenerable score files
 model/holistic_v2/results/*_oof_scores.csv

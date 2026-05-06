@@ -1,0 +1,36 @@
+# Data Audit Run Log
+
+## Run Config
+
+```json
+{
+  "mode": "full",
+  "tuning_train_rows": null,
+  "tuning_valid_rows": null,
+  "train_rows": null,
+  "eval_rows": null,
+  "baseline_n_iter": 6,
+  "catboost_n_iter": 5,
+  "top_n_baseline_to_balance": 10,
+  "top_n_to_advanced": 10,
+  "top_n_to_anomaly": 6,
+  "fairness_top_n": 10,
+  "shap_top_n": 3,
+  "shap_sample_rows": 1500,
+  "anomaly_legit_rows": 25000,
+  "lof_legit_rows": 15000,
+  "autoencoder_legit_rows": 18000,
+  "include_expensive_ensembles": true,
+  "cascade_top_risk_pct": 0.05,
+  "cascade_final_top_pct": 0.01,
+  "riff_max_depth": 5,
+  "riff_min_leaf": 120,
+  "imbalance_ensemble_estimators": 12,
+  "hyperparameter_tuning_trials": 20
+}
+```
+
+## Data Context Checkpoint
+
+Saved reusable context checkpoint to `C:\Users\LEGION CARLOS\Desktop\Home\BREIT\MIRA_AI\model\full_holistic\results_full_train\00_data_audit\context.joblib`.
+

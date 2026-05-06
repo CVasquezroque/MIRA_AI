@@ -1,0 +1,10 @@
+{
+  "balance_gate | XGBoost | class_weight": "models\\balance_gate_xgboost_class_weight.joblib",
+  "balance_gate | XGBoost | random_oversampling": "models\\balance_gate_xgboost_random_oversampling.joblib",
+  "balance_gate | XGBoost | random_undersampling": "models\\balance_gate_xgboost_random_undersampling.joblib",
+  "balance_gate | LightGBM | class_weight": "models\\balance_gate_lightgbm_class_weight.joblib",
+  "balance_gate | LightGBM | random_oversampling": "models\\balance_gate_lightgbm_random_oversampling.joblib",
+  "balance_gate | LightGBM | smote": "models\\balance_gate_lightgbm_smote.joblib",
+  "balance_gate | XGBoost | smote": "models\\balance_gate_xgboost_smote.joblib",
+  "balance_gate | LightGBM | random_undersampling": "models\\balance_gate_lightgbm_random_undersampling.joblib"
+}

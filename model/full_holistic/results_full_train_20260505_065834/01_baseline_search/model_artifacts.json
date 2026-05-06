@@ -1,0 +1,8 @@
+{
+  "baseline | XGBoost": "models\\baseline_xgboost.joblib",
+  "baseline | CatBoost": "models\\baseline_catboost.joblib",
+  "baseline | LightGBM": "models\\baseline_lightgbm.joblib",
+  "baseline | Random Forest": "models\\baseline_random_forest.joblib",
+  "baseline | Logistic Regression": "models\\baseline_logistic_regression.joblib",
+  "baseline | Decision Tree": "models\\baseline_decision_tree.joblib"
+}

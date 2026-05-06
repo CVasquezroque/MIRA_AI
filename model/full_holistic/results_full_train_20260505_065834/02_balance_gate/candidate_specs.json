@@ -1,0 +1,102 @@
+{
+  "balance_gate | XGBoost | class_weight": {
+    "type": "balance_gate",
+    "model_family": "XGBoost",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | XGBoost | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "XGBoost",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | XGBoost | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "XGBoost",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | XGBoost | smote": {
+    "type": "balance_gate",
+    "model_family": "XGBoost",
+    "balance_policy": "smote"
+  },
+  "balance_gate | LightGBM | class_weight": {
+    "type": "balance_gate",
+    "model_family": "LightGBM",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | LightGBM | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "LightGBM",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | LightGBM | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "LightGBM",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | LightGBM | smote": {
+    "type": "balance_gate",
+    "model_family": "LightGBM",
+    "balance_policy": "smote"
+  },
+  "balance_gate | Random Forest | class_weight": {
+    "type": "balance_gate",
+    "model_family": "Random Forest",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | Random Forest | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "Random Forest",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | Random Forest | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "Random Forest",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | Random Forest | smote": {
+    "type": "balance_gate",
+    "model_family": "Random Forest",
+    "balance_policy": "smote"
+  },
+  "balance_gate | Logistic Regression | class_weight": {
+    "type": "balance_gate",
+    "model_family": "Logistic Regression",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | Logistic Regression | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "Logistic Regression",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | Logistic Regression | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "Logistic Regression",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | Logistic Regression | smote": {
+    "type": "balance_gate",
+    "model_family": "Logistic Regression",
+    "balance_policy": "smote"
+  },
+  "balance_gate | Decision Tree | class_weight": {
+    "type": "balance_gate",
+    "model_family": "Decision Tree",
+    "balance_policy": "class_weight"
+  },
+  "balance_gate | Decision Tree | random_undersampling": {
+    "type": "balance_gate",
+    "model_family": "Decision Tree",
+    "balance_policy": "random_undersampling"
+  },
+  "balance_gate | Decision Tree | random_oversampling": {
+    "type": "balance_gate",
+    "model_family": "Decision Tree",
+    "balance_policy": "random_oversampling"
+  },
+  "balance_gate | Decision Tree | smote": {
+    "type": "balance_gate",
+    "model_family": "Decision Tree",
+    "balance_policy": "smote"
+  }
+}

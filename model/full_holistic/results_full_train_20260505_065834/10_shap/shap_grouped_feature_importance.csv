@@ -1,0 +1,139 @@
+model,parent_feature,mean_abs_shap,mean_shap,n_rows
+hyperparameter_tuned | CatBoost,device_os,0.44914873504886244,-0.03841120879017106,1500
+hyperparameter_tuned | CatBoost,has_other_cards,0.3930669124139796,0.009887792873600778,1500
+hyperparameter_tuned | CatBoost,prev_address_months_count,0.3673996867979572,0.029770598034416503,1500
+hyperparameter_tuned | CatBoost,phone_home_valid,0.3587868467506977,-0.018146657740801632,1500
+hyperparameter_tuned | CatBoost,name_email_similarity,0.33163496142257226,0.06313632320467889,1500
+hyperparameter_tuned | CatBoost,keep_alive_session,0.32249834007322087,-0.010321870598602775,1500
+hyperparameter_tuned | CatBoost,current_address_months_count,0.3213099225514336,0.019697733873693102,1500
+hyperparameter_tuned | CatBoost,income,0.31012032132163175,0.09390839464819806,1500
+hyperparameter_tuned | CatBoost,housing_status,0.24881442109527943,0.015254144471136632,1500
+hyperparameter_tuned | CatBoost,intended_balcon_amount,0.23538100157822286,0.0032705012766419185,1500
+hyperparameter_tuned | CatBoost,customer_age,0.2201746654426631,0.0047211297532129765,1500
+hyperparameter_tuned | CatBoost,bank_branch_count_8w,0.20186008485965462,0.0033902978211615893,1500
+hyperparameter_tuned | CatBoost,employment_status,0.18248431849197022,0.027487298826190967,1500
+hyperparameter_tuned | CatBoost,credit_risk_score,0.14599461265169938,0.03665233332916729,1500
+hyperparameter_tuned | CatBoost,email_is_free,0.13323991307149133,-0.017005905448854348,1500
+hyperparameter_tuned | CatBoost,email_free__source,0.12232508444307394,-0.016669548405613695,1500
+hyperparameter_tuned | CatBoost,velocity_4w,0.11286232472749146,0.025169857216932864,1500
+hyperparameter_tuned | CatBoost,date_of_birth_distinct_emails_4w,0.09612343514613413,0.04029302048650051,1500
+hyperparameter_tuned | CatBoost,velocity_24h,0.09467253267746316,-0.06923498972982364,1500
+hyperparameter_tuned | CatBoost,bank_months_count,0.09422619312916514,-0.0018093682479865046,1500
+hyperparameter_tuned | CatBoost,days_since_request,0.09006632037202958,-0.013784940406393243,1500
+hyperparameter_tuned | CatBoost,zip_count_4w,0.07152199817623063,-0.027737718828895894,1500
+hyperparameter_tuned | CatBoost,address_months_to_age,0.05400508953520895,0.011602602907295236,1500
+hyperparameter_tuned | CatBoost,phone_valid_combo,0.04385341735609077,-0.0055850532837852795,1500
+hyperparameter_tuned | CatBoost,log1p_zip_count_4w,0.04380420879412991,-0.015078326142814864,1500
+hyperparameter_tuned | CatBoost,proposed_credit_limit,0.042857348720250814,-0.011574489478013107,1500
+hyperparameter_tuned | CatBoost,device_distinct_emails_8w,0.04211207627569533,-0.009768742922133603,1500
+hyperparameter_tuned | CatBoost,velocity_6h,0.040430467401375285,0.013684126440992643,1500
+hyperparameter_tuned | CatBoost,payment_type,0.027968625021802352,0.0032080026952080514,1500
+hyperparameter_tuned | CatBoost,log1p_proposed_credit_limit,0.027535760753166785,-0.005820214767874542,1500
+hyperparameter_tuned | CatBoost,log1p_session_length_in_minutes,0.025525559243699186,-0.0013988412362738426,1500
+hyperparameter_tuned | CatBoost,risk_score_to_credit_limit,0.02539838693123272,0.009305442257110138,1500
+hyperparameter_tuned | CatBoost,session_length_per_device_email,0.021642620301460927,0.0004984182085757727,1500
+hyperparameter_tuned | CatBoost,session_length_in_minutes,0.017651434332917226,-0.0016953288804048697,1500
+hyperparameter_tuned | CatBoost,foreign_request,0.010743016537886372,0.00024223845828741242,1500
+hyperparameter_tuned | CatBoost,phone_mobile_valid,0.007852169973853016,-0.0010637776147244772,1500
+hyperparameter_tuned | CatBoost,device_fraud_count,0.0,0.0,1500
+hyperparameter_tuned | CatBoost,source,0.0,0.0,1500
+hyperparameter_tuned | XGBoost,phone_home_valid,0.4717452933519054,-0.02994386280245303,1500
+hyperparameter_tuned | XGBoost,device_os,0.4444448936970889,-0.0023057980770897117,1500
+hyperparameter_tuned | XGBoost,name_email_similarity,0.41864686222706526,-0.06102970038174652,1500
+hyperparameter_tuned | XGBoost,prev_address_months_count,0.3790352662736387,-0.07892644936558403,1500
+hyperparameter_tuned | XGBoost,current_address_months_count,0.3507223049628192,-0.034667727988315744,1500
+hyperparameter_tuned | XGBoost,has_other_cards,0.34608977437211047,-0.06646843443279116,1500
+hyperparameter_tuned | XGBoost,email_is_free,0.3340971369247379,0.007015929024999496,1500
+hyperparameter_tuned | XGBoost,keep_alive_session,0.32974963799320706,-0.019645658435473064,1500
+hyperparameter_tuned | XGBoost,intended_balcon_amount,0.31212103392658136,0.03430563268254201,1500
+hyperparameter_tuned | XGBoost,housing_status,0.3065962834024026,0.08728291260332179,1500
+hyperparameter_tuned | XGBoost,income,0.2722019835759032,0.004710890934675311,1500
+hyperparameter_tuned | XGBoost,bank_branch_count_8w,0.228420715165132,-0.011123267455439394,1500
+hyperparameter_tuned | XGBoost,employment_status,0.2093552120012627,-0.006381929897839823,1500
+hyperparameter_tuned | XGBoost,velocity_4w,0.18679767622914883,0.009258035816658716,1500
+hyperparameter_tuned | XGBoost,credit_risk_score,0.16167241346683395,-0.0011247110841052692,1500
+hyperparameter_tuned | XGBoost,date_of_birth_distinct_emails_4w,0.14103772706617854,0.010670361209560459,1500
+hyperparameter_tuned | XGBoost,days_since_request,0.13207691612489755,-0.01933122584646878,1500
+hyperparameter_tuned | XGBoost,velocity_24h,0.12244330086238708,0.03213841462925176,1500
+hyperparameter_tuned | XGBoost,customer_age,0.12168878282391389,0.022911943469402226,1500
+hyperparameter_tuned | XGBoost,bank_months_count,0.1205196472810624,0.009293812195268305,1500
+hyperparameter_tuned | XGBoost,zip_count_4w,0.12010409597362741,0.008470686189700307,1500
+hyperparameter_tuned | XGBoost,session_length_in_minutes,0.08866784798688448,0.0007248445512288413,1500
+hyperparameter_tuned | XGBoost,payment_type,0.0612879915955818,0.00037281067254642583,1500
+hyperparameter_tuned | XGBoost,velocity_6h,0.05891610401253875,0.0017266205278655983,1500
+hyperparameter_tuned | XGBoost,proposed_credit_limit,0.04518753387460175,0.014531140956815023,1500
+hyperparameter_tuned | XGBoost,phone_mobile_valid,0.030554237056185183,-0.0066132099962187925,1500
+hyperparameter_tuned | XGBoost,device_distinct_emails_8w,0.02729354211561227,0.01011167971709588,1500
+hyperparameter_tuned | XGBoost,foreign_request,0.01921117457180206,-0.0006244799753736397,1500
+hyperparameter_tuned | XGBoost,source,0.00013305886844793956,-7.58420651157697e-05,1500
+hyperparameter_tuned | XGBoost,month,0.0,0.0,1500
+hyperparameter_tuned | XGBoost,device_fraud_count,0.0,0.0,1500
+advanced_gate | CatBoost,device_os,0.45873985395979844,-0.036126863216608546,1500
+advanced_gate | CatBoost,has_other_cards,0.331244540954552,0.013385503626569711,1500
+advanced_gate | CatBoost,prev_address_months_count,0.31829649596694487,0.04693201085266859,1500
+advanced_gate | CatBoost,name_email_similarity,0.30829764258711423,0.06214831681507678,1500
+advanced_gate | CatBoost,phone_home_valid,0.2944834838902616,-0.010848584890628404,1500
+advanced_gate | CatBoost,keep_alive_session,0.2878947369701177,-0.010111160061626056,1500
+advanced_gate | CatBoost,current_address_months_count,0.28386688299511925,0.02073420222057823,1500
+advanced_gate | CatBoost,housing_status,0.2819929029824148,-0.003275527335030251,1500
+advanced_gate | CatBoost,income,0.24074713312703663,0.07649235924188096,1500
+advanced_gate | CatBoost,intended_balcon_amount,0.18712635307434372,0.0016597550363155473,1500
+advanced_gate | CatBoost,bank_branch_count_8w,0.17100504196166913,0.003697335148094128,1500
+advanced_gate | CatBoost,email_free__source,0.16463527785347734,-0.020222438154775035,1500
+advanced_gate | CatBoost,customer_age,0.149462566526607,0.0065531098233790885,1500
+advanced_gate | CatBoost,employment_status,0.11047304749284115,0.01879672657094326,1500
+advanced_gate | CatBoost,velocity_4w,0.10134036084296764,0.018049984945827737,1500
+advanced_gate | CatBoost,credit_risk_score,0.09282068321895028,0.02026281426997629,1500
+advanced_gate | CatBoost,bank_months_count,0.08667599353390547,-0.002364301943147865,1500
+advanced_gate | CatBoost,date_of_birth_distinct_emails_4w,0.08419968007399717,0.025501534861129157,1500
+advanced_gate | CatBoost,phone_valid_combo,0.08162844708619549,-0.009856207480233786,1500
+advanced_gate | CatBoost,email_is_free,0.07704387468425308,-0.010253633171895567,1500
+advanced_gate | CatBoost,days_since_request,0.06983765640492126,-0.011076046216088101,1500
+advanced_gate | CatBoost,zip_count_4w,0.0667972956044396,-0.027909782477439266,1500
+advanced_gate | CatBoost,velocity_24h,0.06070610889090484,-0.04401541560856278,1500
+advanced_gate | CatBoost,payment_type,0.05035456370104767,0.008712070114677343,1500
+advanced_gate | CatBoost,device_distinct_emails_8w,0.04231436625528255,-0.010015661768237842,1500
+advanced_gate | CatBoost,address_months_to_age,0.03357488571578016,0.010630664187836824,1500
+advanced_gate | CatBoost,log1p_zip_count_4w,0.031198811663549923,-0.011485462790879244,1500
+advanced_gate | CatBoost,log1p_proposed_credit_limit,0.030289730112896162,-0.004674712856250957,1500
+advanced_gate | CatBoost,risk_score_to_credit_limit,0.02924671786438627,0.01091117980214439,1500
+advanced_gate | CatBoost,velocity_6h,0.02215161371760929,0.010288759681967647,1500
+advanced_gate | CatBoost,proposed_credit_limit,0.02106033962908068,-0.0033673347250674085,1500
+advanced_gate | CatBoost,session_length_in_minutes,0.017127335290933642,-0.0013795383400972345,1500
+advanced_gate | CatBoost,foreign_request,0.013355698751774841,-0.0003715611818788228,1500
+advanced_gate | CatBoost,session_length_per_device_email,0.007937078542842833,-0.0001221606320313708,1500
+advanced_gate | CatBoost,phone_mobile_valid,0.00704595650262165,-0.001485479234624777,1500
+advanced_gate | CatBoost,log1p_session_length_in_minutes,0.005565715690320045,-0.0013679153532365567,1500
+advanced_gate | CatBoost,device_fraud_count,0.0,0.0,1500
+advanced_gate | CatBoost,source,0.0,0.0,1500
+balance_gate | XGBoost | class_weight,phone_home_valid,0.3768870486364681,-0.0219656418207672,1500
+balance_gate | XGBoost | class_weight,device_os,0.374262191398496,-0.0014660203774174475,1500
+balance_gate | XGBoost | class_weight,name_email_similarity,0.30695463041254806,-0.046046708103368104,1500
+balance_gate | XGBoost | class_weight,prev_address_months_count,0.3022771531920201,-0.06413173457088997,1500
+balance_gate | XGBoost | class_weight,housing_status,0.28373498292092736,0.07588333010561725,1500
+balance_gate | XGBoost | class_weight,has_other_cards,0.2811319275482605,-0.05553609065612244,1500
+balance_gate | XGBoost | class_weight,keep_alive_session,0.2712820960667339,-0.016297862119015575,1500
+balance_gate | XGBoost | class_weight,current_address_months_count,0.2641723667494095,-0.023870653275801644,1500
+balance_gate | XGBoost | class_weight,email_is_free,0.23226664916523404,9.777517910855179e-05,1500
+balance_gate | XGBoost | class_weight,income,0.22195039043102102,0.0028495883836884357,1500
+balance_gate | XGBoost | class_weight,intended_balcon_amount,0.21270252633630043,0.029860454955738386,1500
+balance_gate | XGBoost | class_weight,bank_branch_count_8w,0.16598803005641094,-0.0008324403766922962,1500
+balance_gate | XGBoost | class_weight,employment_status,0.12067415334320629,0.0017665400834061427,1500
+balance_gate | XGBoost | class_weight,credit_risk_score,0.10978270733231796,-0.0010841128893181056,1500
+balance_gate | XGBoost | class_weight,date_of_birth_distinct_emails_4w,0.09781580671987439,0.009695405837087698,1500
+balance_gate | XGBoost | class_weight,velocity_4w,0.09676796424573676,0.0008443888001772578,1500
+balance_gate | XGBoost | class_weight,customer_age,0.095804071161707,0.015718461992339384,1500
+balance_gate | XGBoost | class_weight,days_since_request,0.06861990728309418,-0.00450825550789518,1500
+balance_gate | XGBoost | class_weight,zip_count_4w,0.06384203516431997,0.0003077595725068624,1500
+balance_gate | XGBoost | class_weight,bank_months_count,0.05609121051020901,0.012799917816841625,1500
+balance_gate | XGBoost | class_weight,payment_type,0.035880425987723674,0.001997467858446374,1500
+balance_gate | XGBoost | class_weight,velocity_24h,0.030063736617295268,0.0049189483703721395,1500
+balance_gate | XGBoost | class_weight,proposed_credit_limit,0.0238781383148185,0.007664152220766215,1500
+balance_gate | XGBoost | class_weight,device_distinct_emails_8w,0.023223332835927528,0.008552772376507442,1500
+balance_gate | XGBoost | class_weight,phone_mobile_valid,0.014238008871459944,-0.002905957407267221,1500
+balance_gate | XGBoost | class_weight,session_length_in_minutes,0.012357863793150755,0.0006029482027325625,1500
+balance_gate | XGBoost | class_weight,foreign_request,0.012048622527878422,-0.0015238210874283684,1500
+balance_gate | XGBoost | class_weight,velocity_6h,0.008786299942042679,0.000974532772600651,1500
+balance_gate | XGBoost | class_weight,device_fraud_count,0.0,0.0,1500
+balance_gate | XGBoost | class_weight,month,0.0,0.0,1500
+balance_gate | XGBoost | class_weight,source,0.0,0.0,1500

@@ -1,0 +1,111 @@
+{
+  "imbalance_ensemble_gate | EasyEnsemble | default": {
+    "type": "imbalance_ensemble_gate",
+    "method": "EasyEnsemble",
+    "selection": "default",
+    "trial_name": "default",
+    "implementation": "official_imbens",
+    "params": {},
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.11668308310996305,
+    "search_validation_roc_auc": 0.8537636316402042,
+    "final_validation_roc_auc": 0.8537636316402042,
+    "final_test_roc_auc": 0.8586042015192075,
+    "final_test_inverted_roc_auc": 0.14139579848079253,
+    "final_test_score_inversion_suspected": false
+  },
+  "imbalance_ensemble_gate | EasyEnsemble | validation_selected": {
+    "type": "imbalance_ensemble_gate",
+    "method": "EasyEnsemble",
+    "selection": "validation_selected",
+    "trial_name": "search_max_samples_0_5_max_features_0_5",
+    "implementation": "official_imbens",
+    "params": {
+      "max_samples": 0.5,
+      "max_features": 0.5
+    },
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.12852257978147982,
+    "search_validation_roc_auc": 0.8637468293814636,
+    "final_validation_roc_auc": 0.8637468293814636,
+    "final_test_roc_auc": 0.8687931578856979,
+    "final_test_inverted_roc_auc": 0.13120684211430209,
+    "final_test_score_inversion_suspected": false
+  },
+  "imbalance_ensemble_gate | Balance Cascade | default": {
+    "type": "imbalance_ensemble_gate",
+    "method": "Balance Cascade",
+    "selection": "default",
+    "trial_name": "default",
+    "implementation": "official_imbens",
+    "params": {},
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.016103227257384937,
+    "search_validation_roc_auc": 0.45617993862005635,
+    "final_validation_roc_auc": 0.45617993862005635,
+    "final_test_roc_auc": 0.4532983475840685,
+    "final_test_inverted_roc_auc": 0.5467016524159315,
+    "final_test_score_inversion_suspected": true
+  },
+  "imbalance_ensemble_gate | Balance Cascade | validation_selected": {
+    "type": "imbalance_ensemble_gate",
+    "method": "Balance Cascade",
+    "selection": "validation_selected",
+    "trial_name": "search_replacement_false",
+    "implementation": "official_imbens",
+    "params": {
+      "replacement": false
+    },
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.021138888572217584,
+    "search_validation_roc_auc": 0.4595041911941947,
+    "final_validation_roc_auc": 0.4595041911941947,
+    "final_test_roc_auc": 0.47463658313506185,
+    "final_test_inverted_roc_auc": 0.525363416864938,
+    "final_test_score_inversion_suspected": true
+  },
+  "imbalance_ensemble_gate | Self-paced Ensemble | default": {
+    "type": "imbalance_ensemble_gate",
+    "method": "Self-paced Ensemble",
+    "selection": "default",
+    "trial_name": "default",
+    "implementation": "official_imbens",
+    "params": {},
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.15415001306506076,
+    "search_validation_roc_auc": 0.8640104503586958,
+    "final_validation_roc_auc": 0.8640104503586958,
+    "final_test_roc_auc": 0.8687082494266899,
+    "final_test_inverted_roc_auc": 0.13129175057331008,
+    "final_test_score_inversion_suspected": false
+  },
+  "imbalance_ensemble_gate | Self-paced Ensemble | validation_selected": {
+    "type": "imbalance_ensemble_gate",
+    "method": "Self-paced Ensemble",
+    "selection": "validation_selected",
+    "trial_name": "search_k_bins_10",
+    "implementation": "official_imbens",
+    "params": {
+      "k_bins": 10
+    },
+    "ignored_params": [],
+    "classes_": "0,1",
+    "search_classes_": "0,1",
+    "search_validation_pr_auc": 0.1559508261613684,
+    "search_validation_roc_auc": 0.8616947275158313,
+    "final_validation_roc_auc": 0.8616947275158313,
+    "final_test_roc_auc": 0.8662543736773649,
+    "final_test_inverted_roc_auc": 0.13374562632263512,
+    "final_test_score_inversion_suspected": false
+  }
+}

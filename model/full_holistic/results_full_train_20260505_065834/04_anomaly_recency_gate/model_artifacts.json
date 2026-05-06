@@ -1,0 +1,10 @@
+{
+  "anomaly_recency_gate | XGBoost | full_0_5 | with_isolation_forest_anomaly_score": "models\\anomaly_recency_gate_xgboost_full_0_5_with_isolation_forest_anomaly_score.joblib",
+  "anomaly_recency_gate | XGBoost | full_0_5 | without_anomaly_scores": "models\\anomaly_recency_gate_xgboost_full_0_5_without_anomaly_scores.joblib",
+  "anomaly_recency_gate | XGBoost | recent_3_5 | with_isolation_forest_anomaly_score": "models\\anomaly_recency_gate_xgboost_recent_3_5_with_isolation_forest_anomaly_score.joblib",
+  "anomaly_recency_gate | XGBoost | recent_3_5 | without_anomaly_scores": "models\\anomaly_recency_gate_xgboost_recent_3_5_without_anomaly_scores.joblib",
+  "anomaly_recency_gate | XGBoost | full_0_5_recency_weighted | without_anomaly_scores": "models\\anomaly_recency_gate_xgboost_full_0_5_recency_weighted_without_anomaly_scores.joblib",
+  "anomaly_recency_gate | XGBoost | full_0_5_recency_weighted | with_isolation_forest_anomaly_score": "models\\anomaly_recency_gate_xgboost_full_0_5_recency_weighted_with_isolation_forest_anomaly_score.joblib",
+  "anomaly_recency_gate | Logistic Regression | recent_3_5 | with_isolation_forest_anomaly_score": "models\\anomaly_recency_gate_logistic_regression_recent_3_5_with_isolation_forest_anomaly_score.joblib",
+  "anomaly_recency_gate | LightGBM | full_0_5_recency_weighted | without_anomaly_scores": "models\\anomaly_recency_gate_lightgbm_full_0_5_recency_weighted_without_anomaly_scores.joblib"
+}
